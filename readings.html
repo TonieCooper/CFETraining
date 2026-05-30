@@ -175,7 +175,7 @@
       <div class="control-group">
         <label class="control-label" for="voice-select">Voice</label>
         <select id="voice-select" onchange="changeVoice(this.value)">
-          <option value="">Loading voices...</option>
+          <option value="">Loading US English voices...</option>
         </select>
       </div>
 
@@ -571,7 +571,10 @@ function resumeSavedProgress() {
   const saved = getSavedProgress();
   if (!saved) return;
   loadTopic(saved.section, saved.topic, saved.index || 0);
-  setTimeout(scrollToCurrent, 100);
+  setTimeout(() => {
+    scrollToCurrent();
+    startReading();
+  }, 150);
 }
 
 function clearSavedProgress() {
@@ -581,6 +584,29 @@ function clearSavedProgress() {
 }
 
 
+function isUSEnglishVoice(voice) {
+  return /^en-US$/i.test(voice.lang || '');
+}
+
+function isLikelyFemaleVoice(voice) {
+  const name = (voice.name || '').toLowerCase();
+  const femaleSignals = [
+    'female', 'woman', 'samantha', 'victoria', 'karen', 'moira', 'tessa',
+    'zira', 'jenny', 'aria', 'ana', 'ava', 'allison', 'susan', 'sara',
+    'joanna', 'kendra', 'kimberly', 'salli', 'ivy', 'olivia', 'amy',
+    'emma', 'lisa', 'michelle', 'natasha', 'monica'
+  ];
+  return femaleSignals.some(signal => name.includes(signal));
+}
+
+function voiceSortScore(voice) {
+  let score = 0;
+  if (isLikelyFemaleVoice(voice)) score -= 100;
+  if (voice.default) score -= 20;
+  if ((voice.localService || false) === false) score += 2;
+  return score;
+}
+
 function populateVoices() {
   if (!window.speechSynthesis) {
     const select = document.getElementById('voice-select');
@@ -589,24 +615,55 @@ function populateVoices() {
     return;
   }
 
-  availableVoices = window.speechSynthesis.getVoices();
+  const allVoices = window.speechSynthesis.getVoices();
+  const usVoices = allVoices.filter(isUSEnglishVoice).sort((a, b) => {
+    const scoreDiff = voiceSortScore(a) - voiceSortScore(b);
+    return scoreDiff || a.name.localeCompare(b.name);
+  });
+
+  availableVoices = usVoices;
   const select = document.getElementById('voice-select');
   select.innerHTML = '';
 
-  if (!availableVoices.length) {
+  if (!allVoices.length) {
     select.innerHTML = '<option value="">Loading voices...</option>';
     return;
   }
 
-  availableVoices.forEach((voice, index) => {
-    const option = document.createElement('option');
-    option.value = voice.voiceURI;
-    option.textContent = `${voice.name} (${voice.lang})${voice.default ? ' — Default' : ''}`;
-    select.appendChild(option);
+  if (!availableVoices.length) {
+    select.innerHTML = '<option value="">No US English voices found</option>';
+    select.disabled = true;
+    selectedVoiceURI = '';
+    return;
+  }
 
-    if (!selectedVoiceURI && voice.default) selectedVoiceURI = voice.voiceURI;
-    if (!selectedVoiceURI && index === 0) selectedVoiceURI = voice.voiceURI;
-  });
+  select.disabled = false;
+
+  const femaleVoices = availableVoices.filter(isLikelyFemaleVoice);
+  const otherVoices = availableVoices.filter(voice => !isLikelyFemaleVoice(voice));
+
+  function addVoiceOptions(label, voices) {
+    if (!voices.length) return;
+    const group = document.createElement('optgroup');
+    group.label = label;
+    voices.forEach(voice => {
+      const option = document.createElement('option');
+      option.value = voice.voiceURI;
+      option.textContent = `${voice.name} (${voice.lang})${voice.default ? ' — Default' : ''}`;
+      group.appendChild(option);
+    });
+    select.appendChild(group);
+  }
+
+  addVoiceOptions('Female US English voices', femaleVoices);
+  addVoiceOptions('Other US English voices', otherVoices);
+
+  const savedVoiceStillExists = availableVoices.some(voice => voice.voiceURI === selectedVoiceURI);
+  if (!savedVoiceStillExists) {
+    const preferredVoice = femaleVoices[0] || availableVoices.find(voice => voice.default) || availableVoices[0];
+    selectedVoiceURI = preferredVoice ? preferredVoice.voiceURI : '';
+    if (selectedVoiceURI) localStorage.setItem('cfeReaderVoice', selectedVoiceURI);
+  }
 
   select.value = selectedVoiceURI;
 }
