@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CFE Study Reader</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Georgia, serif; background: #f8f7f4; color: #1a1a1a; }
+  #app { display: flex; height: 100vh; overflow: hidden; }
+  #sidebar { width: 260px; min-width: 260px; background: #1e2a3a; color: #e8ecf0; overflow-y: auto; padding: 0; display: flex; flex-direction: column; }
+  #sidebar h1 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: #8ca0b8; padding: 20px 16px 12px; border-bottom: 1px solid #2d3f52; }
+  .section-btn { display: block; width: 100%; text-align: left; background: none; border: none; color: #c8d4e0; padding: 10px 16px; cursor: pointer; font-size: 13px; border-left: 3px solid transparent; transition: all 0.15s; }
+  .section-btn:hover { background: #2d3f52; color: #fff; }
+  .section-btn.active { background: #2d3f52; color: #7eb8f7; border-left-color: #7eb8f7; font-weight: 600; }
+  .topic-btn { display: block; width: 100%; text-align: left; background: none; border: none; color: #8ca0b8; padding: 7px 16px 7px 28px; cursor: pointer; font-size: 12px; border-left: 3px solid transparent; transition: all 0.15s; }
+  .topic-btn:hover { background: #253447; color: #c8d4e0; }
+  .topic-btn.active { color: #7eb8f7; background: #253447; border-left-color: #4a7ab0; }
+  #main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  #controls { background: #fff; border-bottom: 1px solid #e0ddd6; padding: 10px 24px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  #controls button { background: #1e2a3a; color: #fff; border: none; border-radius: 6px; padding: 7px 16px; cursor: pointer; font-size: 13px; font-family: inherit; display: flex; align-items: center; gap: 6px; transition: background 0.15s; }
+  #controls button:hover { background: #2d3f52; }
+  #controls button:disabled { background: #b0b0b0; cursor: not-allowed; }
+  #controls button.active { background: #1a5fb4; }
+  #speed-label { font-size: 12px; color: #666; white-space: nowrap; }
+  #speed { width: 80px; cursor: pointer; }
+  #progress-bar { height: 3px; background: #e0ddd6; position: relative; }
+  #progress-fill { height: 3px; background: #1a5fb4; transition: width 0.3s; }
+  #content-area { flex: 1; overflow-y: auto; padding: 32px 48px; max-width: 900px; margin: 0 auto; width: 100%; }
+  #section-title { font-size: 22px; font-weight: 700; color: #1e2a3a; margin-bottom: 6px; }
+  #topic-title { font-size: 16px; color: #666; margin-bottom: 28px; border-bottom: 2px solid #e0ddd6; padding-bottom: 12px; }
+  .para { font-size: 16px; line-height: 1.85; margin-bottom: 18px; padding: 10px 14px; border-radius: 6px; border-left: 4px solid transparent; transition: all 0.3s; cursor: pointer; }
+  .para:hover { background: #f0f0ec; }
+  .para.reading { background: #fff8e1; border-left-color: #f0a500; box-shadow: 0 2px 8px rgba(240,165,0,0.15); }
+  .para.done { color: #888; }
+  .heading { font-size: 18px; font-weight: 700; color: #1e2a3a; margin: 28px 0 12px; padding-left: 14px; }
+  .subheading { font-size: 15px; font-weight: 600; color: #2d3f52; margin: 18px 0 8px; padding-left: 14px; }
+  .callout { background: #e8f4ff; border-left: 4px solid #1a5fb4; border-radius: 0 6px 6px 0; padding: 12px 16px; margin: 14px 0; font-size: 15px; color: #1a3a5f; }
+  #status-bar { background: #1e2a3a; color: #8ca0b8; font-size: 12px; padding: 6px 24px; display: flex; gap: 20px; }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="sidebar">
+    <h1>CFE Study Reader</h1>
+    <div id="nav"></div>
+  </div>
+  <div id="main">
+    <div id="controls">
+      <button id="btn-play" onclick="togglePlay()">▶ Play</button>
+      <button id="btn-prev" onclick="prevPara()">⏮ Prev</button>
+      <button id="btn-next" onclick="nextPara()">⏭ Next</button>
+      <button id="btn-restart" onclick="restartSection()">↺ Restart</button>
+      <span id="speed-label">Speed: <span id="speed-val">1.0×</span></span>
+      <input type="range" id="speed" min="0.5" max="2.0" step="0.1" value="1.0" oninput="changeSpeed(this.value)">
+      <span id="para-counter" style="font-size:12px;color:#888;margin-left:auto;"></span>
+    </div>
+    <div id="progress-bar"><div id="progress-fill" style="width:0%"></div></div>
+    <div id="content-area">
+      <div id="section-title"></div>
+      <div id="topic-title"></div>
+      <div id="content"></div>
+    </div>
+    <div id="status-bar">
+      <span id="st-section">Section: —</span>
+      <span id="st-topic">Topic: —</span>
+      <span id="st-status">Ready</span>
+    </div>
+  </div>
+</div>
+
+<script>
+const CONTENT = {
+  "Fraud Schemes & Financial Crimes": {
+    "Accounting Fundamentals": [
+      {type:"h", text:"Foundational Accounting Concepts"},
+      {type:"p", text:"The double-entry accounting system is the bedrock of modern financial record-keeping. Every transaction affects at least two accounts — a debit and a corresponding credit of equal value. This system creates a self-balancing structure that makes fraud more detectable, because any manipulation must be balanced elsewhere in the books. Understanding this principle is critical for a fraud examiner, as it explains both how fraudsters attempt to conceal their schemes and where to look for anomalies."},
+      {type:"p", text:"The accounting equation — Assets = Liabilities + Equity — must always remain in balance. Fraud often involves manipulating one or more of these components. Asset misappropriation increases the gap between recorded and actual assets. Financial statement fraud may artificially inflate revenues (increasing equity) without a corresponding real-world transaction. Recognizing how the equation can be manipulated is foundational to detecting financial crime."},
+      {type:"p", text:"The income statement reflects revenues, expenses, and net income over a period. It is one of the most commonly manipulated financial statements. Fraudsters may overstate revenues by recording fictitious sales, accelerating revenue recognition, or creating round-trip transactions. They may understate expenses by capitalizing costs that should be expensed, deferring legitimate expenses, or simply failing to record them. Both approaches inflate reported net income and can deceive investors, creditors, and regulators."},
+      {type:"p", text:"The balance sheet provides a snapshot of financial position at a point in time, listing all assets, liabilities, and equity. Common fraudulent manipulations include overstating inventory values, recording fictitious receivables, understating liabilities (such as excluding off-balance-sheet obligations), and inflating property values. Auditors and fraud examiners must reconcile balance sheet items with supporting documentation and physical counts to detect these manipulations."},
+      {type:"p", text:"The cash flow statement, often overlooked in fraud examinations, can be one of the most reliable indicators of financial manipulation. Because cash flows are harder to fabricate than accrual-based entries, a persistent divergence between reported earnings and operating cash flows is a red flag. Companies inflating earnings through accruals will show high net income but lower-than-expected cash from operations — a hallmark of aggressive or fraudulent accounting."},
+      {type:"h", text:"Internal Controls Overview"},
+      {type:"p", text:"Internal controls are policies and procedures designed to provide reasonable assurance that an organization achieves its objectives related to operations, reporting, and compliance. The COSO (Committee of Sponsoring Organizations) framework identifies five components: control environment, risk assessment, control activities, information and communication, and monitoring. A strong control environment — one where management demonstrates integrity and ethical values — is the foundation upon which all other controls rest."},
+      {type:"p", text:"Segregation of duties is one of the most fundamental internal control principles. It requires that no single individual control all phases of a transaction: authorization, recording, and custody of assets. When one person controls all three, there is both the ability and the opportunity to commit fraud and conceal it. For example, if the same employee who approves vendor payments also processes those payments and reconciles the bank account, the potential for embezzlement is high and difficult to detect without robust oversight."},
+      {type:"callout", text:"Key Principle: Effective internal controls reduce the opportunity component of the Fraud Triangle — they do not eliminate it. Even strong controls can be overridden by management or circumvented through collusion."},
+    ],
+    "Asset Misappropriation": [
+      {type:"h", text:"Cash Theft Schemes"},
+      {type:"p", text:"Asset misappropriation is the most common type of occupational fraud, representing over 86% of all cases according to ACFE research, though it typically involves the smallest dollar losses compared to other fraud types. Cash remains the most frequently stolen asset because it is liquid, easily concealed, and difficult to trace. Cash theft schemes are broadly divided into two categories: skimming (theft of cash before it is recorded) and larceny (theft of cash after it has been recorded in the accounting system)."},
+      {type:"p", text:"Skimming occurs when an employee diverts incoming cash before it is entered into the accounting records. This 'off-the-books' theft is particularly difficult to detect because there is no discrepancy between recorded cash and actual cash — the cash was never recorded in the first place. Common skimming methods include sales skimming (pocketing cash from sales without ringing them up), receivables skimming (collecting payments from customers without posting the receipt), and refund skimming (issuing fictitious refunds and pocketing the cash)."},
+      {type:"p", text:"Cash larceny, by contrast, involves the theft of cash that has already been recorded. This creates a detectable discrepancy between book records and actual cash on hand. Larceny from the register involves removing cash after it has been recorded in a sale. Larceny from deposits involves removing cash from a deposit that has already been prepared. Because the discrepancy is visible in records, perpetrators often employ concealment techniques such as journal entry manipulation, false voids, or lapping — applying later receipts to cover earlier thefts."},
+      {type:"p", text:"Lapping is a particularly insidious concealment technique. It involves applying receivable payments from one customer to cover the theft of an earlier customer's payment. For example, a fraudster steals Customer A's payment. When Customer B's payment arrives, it is applied to Customer A's account. When Customer C pays, it covers Customer B's account, and so on. The scheme can continue indefinitely as long as new payments keep arriving. Detection involves reconciling payment dates on bank deposits against dates payments were credited to individual customer accounts."},
+      {type:"h", text:"Billing and Disbursement Schemes"},
+      {type:"p", text:"Fraudulent disbursement schemes involve manipulating an organization's payment processes to divert funds to the fraudster or an accomplice. Shell company schemes are among the most damaging — a fictitious vendor is created, invoices are submitted for goods or services never received, and payments are made to accounts controlled by the fraudster. Red flags include vendors with P.O. Box addresses only, vendors with the same address as an employee, and vendors lacking a verifiable business presence."},
+      {type:"p", text:"Personal purchases are another common billing scheme where an employee uses the organization's funds to pay for personal expenses. This may involve submitting personal receipts for reimbursement as business expenses, using a company credit card for personal purchases, or having vendors who supply both business and personal items inflate invoices. Review of expense reports, credit card statements, and vendor invoices with an eye toward unusual or personal items can expose these schemes."},
+      {type:"p", text:"Payroll fraud schemes include ghost employee schemes (maintaining terminated or fictitious employees on the payroll and diverting their paychecks), falsified hours and salary schemes (inflating timesheets or unauthorized pay rate changes), and commission fraud (recording fictitious sales to inflate commission payments). These schemes often require access to both HR records and payroll processing, and detection frequently involves reconciling headcount records with payroll data and physically verifying employee existence."},
+      {type:"p", text:"Check tampering involves the physical alteration or forging of checks. Common methods include forging the signature of an authorized signatory on a check made payable to the fraudster or a shell company, altering the payee name on a legitimate check after it has been signed, and creating counterfeit checks using stolen check stock. Detection involves reviewing bank reconciliations carefully, examining canceled check images for signs of alteration, and implementing dual-signature requirements for checks above certain thresholds."},
+    ],
+    "Financial Statement Fraud": [
+      {type:"h", text:"Revenue and Expense Manipulation"},
+      {type:"p", text:"Financial statement fraud involves the intentional misrepresentation of an organization's financial condition through the deliberate misstatement or omission of amounts or disclosures in financial statements. Unlike asset misappropriation, which typically benefits an individual, financial statement fraud usually benefits the organization — at least in the short term — by making it appear more financially healthy than it actually is. It is the least common type of occupational fraud but causes by far the largest median losses."},
+      {type:"p", text:"Revenue overstatement is the most common form of financial statement fraud. Methods include fictitious revenue (recording revenues for transactions that never occurred), premature revenue recognition (recording revenues before the earnings process is complete, such as recording revenue before goods are shipped or services rendered), and channel stuffing (shipping excess inventory to distributors at end of reporting periods with undisclosed rights of return, inflating apparent sales)."},
+      {type:"p", text:"Asset and revenue manipulation often involve related-party transactions that are not disclosed or are structured to mislead. Round-trip transactions involve two parties simultaneously buying from and selling to each other, creating the appearance of revenue with no real economic substance. Bill-and-hold arrangements, where a seller bills for goods but retains physical possession, can inappropriately accelerate revenue recognition. Each of these techniques distorts the economic reality of the organization's performance."},
+      {type:"p", text:"Expense manipulation typically involves either understating expenses (to inflate net income) or overstating assets (which occurs when expenses are capitalized rather than expensed). The WorldCom fraud is the classic example — management capitalized billions in operating expenses as capital expenditures, inflating assets and understating expenses. Detection of capitalization fraud involves analytical procedures comparing capital expenditure ratios to industry norms and scrutinizing the nature and justification of capitalized items."},
+      {type:"callout", text:"The Beneish M-Score and Altman Z-Score are quantitative models used to detect financial statement manipulation. A high M-Score (above −1.78) suggests a company may be manipulating earnings. These models serve as screening tools, not definitive proof of fraud."},
+      {type:"h", text:"Concealment Methods"},
+      {type:"p", text:"Fraudsters conceal financial statement manipulations through a variety of techniques. Journal entry manipulation is particularly common — unusual top-side journal entries made just before the close of a reporting period, entries with round numbers, entries that bypass normal approval processes, or entries made by senior financial executives are all red flags. Auditing standards require auditors to specifically test journal entries as part of the fraud risk response."},
+      {type:"p", text:"Related-party transactions provide fertile ground for financial statement fraud because they are not conducted at arm's-length market conditions. Loans to executives, sales between related entities at non-market prices, and lease arrangements between affiliated companies can all be used to move income, expenses, assets, or liabilities in ways that misrepresent financial condition. Disclosure requirements exist precisely because of these risks, and failures to disclose material related-party transactions are themselves securities violations."},
+    ],
+    "Corruption & Other Schemes": [
+      {type:"h", text:"Bribery and Conflicts of Interest"},
+      {type:"p", text:"Corruption schemes involve the misuse of entrusted power for private gain through bribery, kickbacks, conflicts of interest, or economic extortion. Bribery involves offering, giving, receiving, or soliciting something of value to influence an official act or business decision. In commercial settings, this most commonly appears as vendor kickbacks — payments made to purchasing employees in exchange for steering contracts, inflating prices, or overlooking deficiencies in delivered goods or services."},
+      {type:"p", text:"Conflicts of interest arise when an employee has an undisclosed personal interest in a transaction that may affect their judgment to the detriment of the employer. A purchasing manager who approves contracts with a company in which his spouse holds an ownership stake has a conflict of interest — even if the contract terms are fair. The harm comes from the undisclosed nature of the relationship, which undermines the integrity of the decision-making process and the trust placed in the employee."},
+      {type:"p", text:"The Foreign Corrupt Practices Act (FCPA) and the UK Bribery Act are the primary legal frameworks governing international bribery. The FCPA prohibits U.S. companies and individuals (and foreign companies listed on U.S. exchanges) from bribing foreign government officials to obtain or retain business. It also requires the maintenance of accurate books and records and adequate internal controls. Violations can result in massive criminal and civil penalties for both individuals and corporations."},
+      {type:"h", text:"Cyber-Enabled Fraud"},
+      {type:"p", text:"Identity theft involves obtaining and using another person's identifying information — Social Security numbers, account numbers, passwords — to commit fraud. In organizational contexts, fraudsters may steal employee or customer data to access accounts, open new credit lines, or file fraudulent tax returns. Data breaches that expose personally identifiable information (PII) create massive fraud risks both for individuals whose information is stolen and for the organizations that failed to protect it."},
+      {type:"p", text:"Business Email Compromise (BEC) is one of the fastest-growing and most costly fraud schemes targeting businesses. It involves compromising legitimate business email accounts or impersonating executives to initiate fraudulent wire transfers, redirect payroll deposits, or obtain W-2 information. BEC attacks typically involve careful social engineering — the fraudster studies the organization, impersonates the CEO or CFO, and pressures an employee to wire funds immediately, often citing urgency and confidentiality to bypass normal approval processes."},
+    ],
+  },
+  "Fraud Investigations & Legal Issues": {
+    "Investigation Principles": [
+      {type:"h", text:"Planning a Fraud Examination"},
+      {type:"p", text:"A fraud examination differs fundamentally from an audit. An audit is designed to express an opinion on the fairness of financial statements; a fraud examination is designed to determine whether fraud has occurred, who committed it, how it was accomplished, and how much was lost. Fraud examinations are typically conducted in response to a specific allegation or predicate — a basis for believing that fraud may have occurred. Without adequate predicate, a fraud examination should not be commenced."},
+      {type:"p", text:"The fraud examination process proceeds from the least invasive to the most invasive methods. Examiners typically begin with document review and analysis of publicly available information, progress to more targeted document requests and data analysis, and only later conduct interviews — beginning with neutral witnesses before progressing to suspects. This approach minimizes the risk of alerting a subject prematurely, which could lead to evidence destruction or flight."},
+      {type:"p", text:"The chain of custody is a critical concept in fraud investigations. It refers to the chronological documentation showing the seizure, custody, control, transfer, analysis, and disposition of evidence. Maintaining a proper chain of custody is essential for evidence to be admissible in court proceedings. Any gap in the chain of custody may allow a defense attorney to challenge the integrity of the evidence. Evidence should be collected, marked, packaged, and stored in ways that prevent tampering and document all persons who handle it."},
+      {type:"h", text:"Document Examination"},
+      {type:"p", text:"Document examination is a foundational skill in fraud investigation. Documents may be examined for authenticity (detecting alterations, forgeries, or counterfeits), for their content (what information they contain), and for patterns and anomalies in a document population (using data analysis techniques). Physical examination of documents may reveal erasures, ink inconsistencies, inconsistent typefaces, altered dates, or added text — all indicators of potential forgery or alteration."},
+      {type:"p", text:"Digital documents present unique examination challenges and opportunities. Electronic files contain metadata — data about the data — that can reveal when a file was created, when it was last modified, by whom, and on what computer. This metadata can contradict the apparent date or authorship of a document. For example, a backdated contract may have metadata revealing it was created after the date it purports to be signed. Metadata should always be preserved and examined in document-intensive investigations."},
+    ],
+    "Interview Techniques": [
+      {type:"h", text:"Conducting Effective Interviews"},
+      {type:"p", text:"Interviews are the most important evidence-gathering technique available to fraud examiners. Unlike documentary evidence, which is limited to what was written down, interviews can elicit information about motivations, relationships, and events that left no paper trail. The sequence of interviews is critical — informational witnesses (those with knowledge but not suspected involvement) should be interviewed before subjects (those suspected of involvement), to gather background information and to avoid tipping off the subject prematurely."},
+      {type:"p", text:"The cognitive interview technique is a research-backed approach to memory retrieval that helps witnesses recall events more accurately. It involves establishing rapport, asking witnesses to mentally reinstate the context of the event, requesting free recall without interruption, asking the witness to describe events in reverse chronological order, and asking the witness to change perspectives. These techniques have been shown to increase the quantity and quality of information recalled without increasing the rate of false information."},
+      {type:"p", text:"Admission-seeking interviews are conducted with suspects when the examiner has sufficient evidence to confront the subject. The Reid Technique, long used in law enforcement, involves behavioral observation, strategic disclosure of evidence, and a process of minimizing the moral seriousness of the act while emphasizing the inevitability of admission. However, the Reid Technique has faced significant criticism for generating false confessions, particularly in vulnerable populations. Modern alternatives, such as the PEACE model (Preparation, Engage and Explain, Account, Closure, Evaluate), prioritize information-gathering over confession-seeking."},
+      {type:"callout", text:"Miranda warnings apply to custodial interrogations by law enforcement agents. Private-sector fraud examiners are generally not required to give Miranda warnings — but this does not mean subjects must answer questions. Subjects can always decline to participate, and this must be clearly communicated."},
+      {type:"h", text:"Statement Analysis"},
+      {type:"p", text:"Statement analysis involves examining the language of written or oral statements for indicators of deception or concealment. Key indicators include changes in language patterns (use of 'we' versus 'I', passive versus active voice), gaps or vagueness in the account, the inclusion of irrelevant information, and the proportion of time spent on different parts of the account. For example, a truthful account typically devotes proportional time to what happened before, during, and after an event; deceptive accounts often have disproportionately brief accounts of the critical event itself."},
+    ],
+    "Legal Framework": [
+      {type:"h", text:"Criminal Law Principles"},
+      {type:"p", text:"Most fraud offenses require proof of two elements: actus reus (the guilty act) and mens rea (the guilty mind). For fraud, the mens rea typically involves intent to defraud — the prosecution must prove the defendant acted knowingly and willfully to deceive another party for financial gain. This intent requirement is why ignorance or mistake of fact may be a defense to fraud charges, though courts scrutinize such claims carefully when the defendant had professional knowledge and experience."},
+      {type:"p", text:"The federal mail and wire fraud statutes are among the most powerful tools in the prosecutor's arsenal against fraud. They prohibit the use of the U.S. mail system or interstate wire communications (including telephone, email, and internet) in furtherance of a scheme to defraud. Because virtually all modern fraud involves electronic communications, these statutes apply to an enormous range of fraudulent conduct. The statutes carry substantial penalties — up to 20 years imprisonment per count, and up to 30 years if the fraud involves a financial institution."},
+      {type:"p", text:"The Sarbanes-Oxley Act of 2002 (SOX) was enacted in response to the Enron, WorldCom, and other major accounting scandals. Key provisions relevant to fraud examination include: Section 302 (requiring CEO and CFO personal certification of financial statement accuracy), Section 404 (requiring management assessment of internal controls over financial reporting), Section 806 (whistleblower protections for employees of public companies), and Section 1107 (criminal penalties for retaliation against whistleblowers). SOX significantly increased the personal liability of corporate executives for financial fraud."},
+      {type:"h", text:"Evidence Principles"},
+      {type:"p", text:"Evidence in fraud investigations must be relevant, material, and competent to be admissible in legal proceedings. Relevance means the evidence has a tendency to make a fact of consequence more or less probable. Materiality (now often incorporated into relevance under the Federal Rules of Evidence) means the fact the evidence supports is significant to the case. Competence means the evidence was obtained legally and is in an acceptable form — witnesses can testify based on personal knowledge, and documents are authenticated."},
+      {type:"p", text:"The best evidence rule requires that the original document be produced when the contents of a document are at issue, unless the original is unavailable for legitimate reasons. Under the Federal Rules of Evidence, duplicate copies (including photocopies and digital scans) are generally admissible to the same extent as originals, unless there is a genuine question about the original's authenticity or it would be unfair to admit the duplicate. This rule has important implications for how fraud examiners collect and preserve documentary evidence."},
+      {type:"p", text:"The attorney-client privilege protects confidential communications between an attorney and client made for the purpose of seeking or providing legal advice. The work product doctrine protects materials prepared by or for an attorney in anticipation of litigation. When a fraud examiner is engaged by counsel, their work may be protected under these doctrines. However, these protections are not absolute — they can be waived through disclosure, and they do not protect communications made in furtherance of a crime or fraud."},
+    ],
+  },
+  "Fraud Prevention & Deterrence": {
+    "Criminology & Fraud Theory": [
+      {type:"h", text:"The Fraud Triangle"},
+      {type:"p", text:"Donald Cressey's Fraud Triangle, developed from his 1950s research on embezzlers, remains the foundational model for understanding why individuals commit occupational fraud. The three elements are: Pressure (a non-shareable financial problem that motivates the individual to steal), Opportunity (the ability to commit and conceal the fraud, often provided by weak internal controls), and Rationalization (the fraudster's ability to justify their actions as acceptable or necessary). All three elements must be present for most fraud to occur."},
+      {type:"p", text:"The Pressure component of the fraud triangle most commonly involves financial stress — medical bills, gambling debts, drug addiction, or simply living beyond one's means. However, organizational pressures can also motivate management-level fraud, such as pressure to meet earnings targets, fear of job loss if poor financial performance is revealed, or performance-based compensation tied to financial metrics that the executive can manipulate. Understanding the pressure an employee faces is important context for assessing fraud risk."},
+      {type:"p", text:"The Fraud Diamond, proposed by David Wolfe and Dana Hermanson in 2004, added a fourth element to Cressey's model: Capability — the personal traits and abilities that enable a person to actually commit the fraud. Not everyone with pressure, opportunity, and rationalization will commit fraud; the individual also needs the intelligence to understand the system, the authority or technical skills to exploit the opportunity, the confidence and ego to believe they can succeed, and the ability to handle the stress of the ongoing deception."},
+      {type:"h", text:"White-Collar Crime"},
+      {type:"p", text:"Edwin Sutherland coined the term 'white-collar crime' in 1939 to describe crimes committed by persons of respectability and high social status in the course of their occupations. He observed that such crimes were systematically underreported, underprosecuted, and less stigmatized than street crime, despite their enormous economic and social costs. His differential association theory proposed that criminal behavior, including fraud, is learned through association with others who hold favorable definitions of law violation."},
+      {type:"p", text:"Modern research on white-collar offenders has challenged earlier conceptions of the typical fraudster. While the stereotype of the first-time offender acting under extraordinary financial pressure still describes some cases, studies show that a significant proportion of fraud perpetrators have prior offenses, that organizational culture plays a major role in whether individuals commit fraud, and that narcissistic personality traits — including a sense of entitlement, lack of empathy, and willingness to exploit others — are overrepresented among major fraud perpetrators."},
+    ],
+    "Corporate Governance & Prevention": [
+      {type:"h", text:"Board and Management Responsibilities"},
+      {type:"p", text:"The board of directors bears ultimate responsibility for the tone at the top — the ethical climate that permeates an organization and profoundly influences whether fraud is likely to occur. An effective board provides independent oversight of management, including active audit committee oversight of financial reporting, internal controls, and the internal audit function. Boards that are captured by management (due to excessive executive influence over director selection, for example) are less likely to detect or deter management fraud."},
+      {type:"p", text:"The audit committee of the board has specific responsibilities for fraud deterrence. Under SOX, the audit committee of public companies must include independent directors with financial expertise, must oversee the external auditor, must establish procedures for receiving and handling complaints regarding accounting and internal controls, and must have authority to engage independent counsel and other advisors. An effective audit committee provides the oversight that deters management from misrepresenting financial results."},
+      {type:"p", text:"Hotlines and whistleblower programs are among the most effective fraud detection mechanisms available to organizations. ACFE research consistently shows that tips from employees are the leading method of fraud detection, responsible for a plurality of all discovered frauds. Organizations with hotlines detect frauds sooner and suffer smaller losses than those without. Effective programs guarantee anonymity, protect reporters from retaliation, and follow up on all credible reports in a timely manner."},
+      {type:"h", text:"Fraud Risk Assessments"},
+      {type:"p", text:"A fraud risk assessment is a systematic process for identifying and assessing an organization's exposure to fraud. It involves identifying inherent fraud risks (given the organization's industry, business activities, and environment), evaluating the adequacy of existing controls to mitigate those risks, and identifying gaps where additional controls or monitoring are needed. A well-conducted fraud risk assessment is a prerequisite for an effective fraud prevention program."},
+      {type:"p", text:"The COSO Fraud Risk Management Guide provides a comprehensive framework for fraud risk management. It recommends establishing a fraud risk governance structure, conducting fraud risk assessments, designing and implementing fraud control activities, conducting fraud investigations and corrective actions, and monitoring the fraud risk management program over time. The guide emphasizes that fraud risk management is an ongoing process, not a one-time event, and must adapt as the organization and its risk environment evolve."},
+    ],
+    "Ethics & Professional Standards": [
+      {type:"h", text:"ACFE Code of Professional Ethics"},
+      {type:"p", text:"The ACFE Code of Professional Ethics establishes standards of conduct for all Certified Fraud Examiners. The four core principles are: Honesty (CFEs shall be honest in all professional matters and shall not knowingly make false statements), Objectivity (CFEs shall maintain objectivity and shall not allow bias, conflict of interest, or undue influence to override professional judgment), Competence (CFEs shall perform their work with due professional care and only take on engagements for which they possess adequate competence), and Confidentiality (CFEs shall not disclose confidential information acquired during engagements without proper authorization)."},
+      {type:"p", text:"Objectivity is particularly critical for fraud examiners. An examiner who approaches a case with a predetermined conclusion — whether to protect a favored individual or to satisfy a client's desired outcome — violates professional ethics and risks producing unreliable work product. Objectivity requires following the evidence wherever it leads, even if the results are inconvenient for the engaging party. If an examiner cannot maintain objectivity due to a conflict of interest or other bias, they should decline or withdraw from the engagement."},
+      {type:"p", text:"Confidentiality obligations mean that CFEs must protect the sensitive information they encounter during fraud examinations. This includes information about the subject of the investigation, information about the organization's internal controls and vulnerabilities, and information about the investigation itself (premature disclosure of which could compromise the investigation or expose the organization to legal risk). CFEs should have clear protocols for information handling, including secure storage of work papers and careful management of who receives investigation reports."},
+      {type:"h", text:"Legal Liability"},
+      {type:"p", text:"Fraud examiners face potential legal liability for their work, including claims of defamation (making false statements of fact that harm a subject's reputation), malicious prosecution (initiating legal proceedings without probable cause and with malice), and tortious interference with employment (improperly causing an employee's termination). These risks reinforce the importance of conducting thorough, objective investigations based on evidence before reaching conclusions, and of carefully managing the content and distribution of investigation reports."},
+      {type:"p", text:"The standard of care for fraud examiners is that of a reasonably prudent person with comparable training and experience under similar circumstances. When examiners fall below this standard — through inadequate planning, failure to follow leads, premature conclusions, or failures to consult needed specialists — they may be found liable for the resulting harm. Maintaining thorough, contemporaneous work papers documenting the examination process is the best defense against liability claims, as it demonstrates the examiner's professional methodology and reasoning."},
+    ],
+  },
+};
+
+let currentSection = null;
+let currentTopic = null;
+let paras = [];
+let currentIdx = 0;
+let isPlaying = false;
+let speed = 1.0;
+let utterance = null;
+
+function buildNav() {
+  const nav = document.getElementById('nav');
+  nav.innerHTML = '';
+  Object.entries(CONTENT).forEach(([sec, topics]) => {
+    const sb = document.createElement('button');
+    sb.className = 'section-btn';
+    sb.textContent = sec;
+    sb.onclick = () => loadSection(sec);
+    nav.appendChild(sb);
+    Object.keys(topics).forEach(topic => {
+      const tb = document.createElement('button');
+      tb.className = 'topic-btn';
+      tb.textContent = topic;
+      tb.onclick = () => loadTopic(sec, topic);
+      nav.appendChild(tb);
+    });
+  });
+}
+
+function loadSection(sec) {
+  const firstTopic = Object.keys(CONTENT[sec])[0];
+  loadTopic(sec, firstTopic);
+}
+
+function loadTopic(sec, topic) {
+  stopReading();
+  currentSection = sec;
+  currentTopic = topic;
+  currentIdx = 0;
+  document.querySelectorAll('.section-btn').forEach(b => b.classList.toggle('active', b.textContent === sec));
+  document.querySelectorAll('.topic-btn').forEach(b => b.classList.toggle('active', b.textContent === topic));
+  document.getElementById('section-title').textContent = sec;
+  document.getElementById('topic-title').textContent = topic;
+  document.getElementById('st-section').textContent = 'Section: ' + sec;
+  document.getElementById('st-topic').textContent = 'Topic: ' + topic;
+  const raw = CONTENT[sec][topic];
+  paras = raw.filter(x => x.type === 'p' || x.type === 'callout');
+  renderContent(raw);
+  updateProgress();
+}
+
+function renderContent(items) {
+  const el = document.getElementById('content');
+  el.innerHTML = '';
+  let pIdx = 0;
+  items.forEach(item => {
+    let d = document.createElement('div');
+    if (item.type === 'h') {
+      d.className = 'heading';
+      d.textContent = item.text;
+    } else if (item.type === 'sub') {
+      d.className = 'subheading';
+      d.textContent = item.text;
+    } else if (item.type === 'callout') {
+      d.className = 'callout';
+      d.dataset.pidx = pIdx++;
+      d.textContent = item.text;
+      d.onclick = () => jumpTo(parseInt(d.dataset.pidx));
+    } else {
+      d.className = 'para';
+      d.dataset.pidx = pIdx++;
+      d.textContent = item.text;
+      d.onclick = () => jumpTo(parseInt(d.dataset.pidx));
+    }
+    el.appendChild(d);
+  });
+}
+
+function jumpTo(idx) {
+  stopReading();
+  currentIdx = idx;
+  updateHighlight();
+  updateProgress();
+}
+
+function togglePlay() {
+  if (isPlaying) { stopReading(); }
+  else { startReading(); }
+}
+
+function startReading() {
+  if (!currentSection) { loadSection(Object.keys(CONTENT)[0]); return; }
+  if (currentIdx >= paras.length) { currentIdx = 0; }
+  isPlaying = true;
+  document.getElementById('btn-play').textContent = '⏸ Pause';
+  document.getElementById('btn-play').classList.add('active');
+  document.getElementById('st-status').textContent = 'Reading...';
+  speakCurrent();
+}
+
+function stopReading() {
+  isPlaying = false;
+  if (window.speechSynthesis) window.speechSynthesis.cancel();
+  document.getElementById('btn-play').textContent = '▶ Play';
+  document.getElementById('btn-play').classList.remove('active');
+  document.getElementById('st-status').textContent = 'Paused';
+}
+
+function speakCurrent() {
+  if (!isPlaying || currentIdx >= paras.length) {
+    if (isPlaying) { stopReading(); document.getElementById('st-status').textContent = 'Section complete'; }
+    return;
+  }
+  updateHighlight();
+  updateProgress();
+  scrollToCurrent();
+  const text = paras[currentIdx].text;
+  utterance = new SpeechSynthesisUtterance(text);
+  utterance.rate = speed;
+  utterance.onend = () => { if (isPlaying) { currentIdx++; speakCurrent(); } };
+  utterance.onerror = (e) => { if (e.error !== 'interrupted') { currentIdx++; if (isPlaying) speakCurrent(); } };
+  window.speechSynthesis.speak(utterance);
+}
+
+function updateHighlight() {
+  document.querySelectorAll('.para, .callout').forEach(el => {
+    const idx = parseInt(el.dataset.pidx);
+    el.classList.remove('reading', 'done');
+    if (idx === currentIdx) el.classList.add('reading');
+    else if (idx < currentIdx) el.classList.add('done');
+  });
+  document.getElementById('para-counter').textContent = paras.length ? `${currentIdx + 1} / ${paras.length}` : '';
+}
+
+function scrollToCurrent() {
+  const el = document.querySelector(`[data-pidx="${currentIdx}"]`);
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function prevPara() {
+  stopReading();
+  if (currentIdx > 0) currentIdx--;
+  updateHighlight();
+  updateProgress();
+  scrollToCurrent();
+}
+
+function nextPara() {
+  stopReading();
+  if (currentIdx < paras.length - 1) currentIdx++;
+  updateHighlight();
+  updateProgress();
+  scrollToCurrent();
+}
+
+function restartSection() {
+  stopReading();
+  currentIdx = 0;
+  updateHighlight();
+  updateProgress();
+  document.getElementById('content-area').scrollTop = 0;
+}
+
+function changeSpeed(val) {
+  speed = parseFloat(val);
+  document.getElementById('speed-val').textContent = speed.toFixed(1) + '×';
+  if (isPlaying && utterance) {
+    stopReading();
+    startReading();
+  }
+}
+
+function updateProgress() {
+  const pct = paras.length ? Math.round((currentIdx / paras.length) * 100) : 0;
+  document.getElementById('progress-fill').style.width = pct + '%';
+}
+
+buildNav();
+loadSection(Object.keys(CONTENT)[0]);
+</script>
+</body>
+</html>

@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CFE Quiz & Exam</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f2f5; color: #1a1a2e; min-height: 100vh; }
+#app { max-width: 900px; margin: 0 auto; padding: 20px; }
+.header { background: #1e2a3a; color: #fff; border-radius: 12px; padding: 20px 28px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+.header h1 { font-size: 20px; font-weight: 600; }
+.header .badge { background: #4a7ab0; color: #fff; border-radius: 20px; padding: 4px 14px; font-size: 12px; }
+#home-screen, #quiz-screen, #results-screen { display: none; }
+#home-screen.active, #quiz-screen.active, #results-screen.active { display: block; }
+.mode-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 20px; }
+.mode-card { background: #fff; border-radius: 12px; border: 2px solid #e0e4ea; padding: 20px; cursor: pointer; transition: all 0.2s; text-align: center; }
+.mode-card:hover { border-color: #4a7ab0; transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+.mode-card.selected { border-color: #1a5fb4; background: #e8f0fe; }
+.mode-card .icon { font-size: 32px; margin-bottom: 10px; }
+.mode-card h3 { font-size: 15px; font-weight: 600; color: #1e2a3a; margin-bottom: 4px; }
+.mode-card p { font-size: 12px; color: #666; }
+.section-select { background: #fff; border-radius: 12px; padding: 20px; margin-bottom: 16px; }
+.section-select h2 { font-size: 15px; font-weight: 600; margin-bottom: 14px; color: #1e2a3a; }
+.sec-btns { display: flex; flex-wrap: wrap; gap: 8px; }
+.sec-btn { background: #f0f2f5; border: 2px solid #e0e4ea; border-radius: 8px; padding: 8px 14px; cursor: pointer; font-size: 13px; font-family: inherit; transition: all 0.15s; }
+.sec-btn:hover { border-color: #4a7ab0; background: #e8f0fe; }
+.sec-btn.active { border-color: #1a5fb4; background: #1a5fb4; color: #fff; }
+.exam-ver { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.ver-btn { background: #f0f2f5; border: 2px solid #e0e4ea; border-radius: 8px; padding: 8px 14px; cursor: pointer; font-size: 13px; font-family: inherit; transition: all 0.15s; }
+.ver-btn:hover { border-color: #4a7ab0; background: #e8f0fe; }
+.ver-btn.active { border-color: #e85d04; background: #e85d04; color: #fff; }
+.start-btn { background: #1a5fb4; color: #fff; border: none; border-radius: 10px; padding: 14px 36px; font-size: 16px; font-family: inherit; cursor: pointer; font-weight: 600; transition: background 0.15s; display: block; margin: 0 auto; }
+.start-btn:hover { background: #1447a0; }
+.start-btn:disabled { background: #b0b8c8; cursor: not-allowed; }
+.quiz-header { background: #fff; border-radius: 12px; padding: 16px 20px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.quiz-info { font-size: 13px; color: #444; }
+.quiz-info strong { color: #1e2a3a; font-size: 15px; }
+.progress-wrap { flex: 1; }
+.prog-bar { height: 8px; background: #e0e4ea; border-radius: 4px; overflow: hidden; }
+.prog-fill { height: 8px; background: #1a5fb4; border-radius: 4px; transition: width 0.3s; }
+.prog-label { font-size: 11px; color: #888; margin-top: 4px; text-align: right; }
+.timer-box { background: #1e2a3a; color: #fff; border-radius: 8px; padding: 6px 14px; font-size: 14px; font-weight: 600; min-width: 72px; text-align: center; }
+.timer-box.warn { background: #d62828; }
+.q-card { background: #fff; border-radius: 12px; padding: 24px 28px; margin-bottom: 14px; }
+.q-num { font-size: 12px; color: #888; margin-bottom: 8px; font-weight: 500; }
+.q-section-tag { display: inline-block; background: #e8f0fe; color: #1a5fb4; border-radius: 4px; padding: 2px 8px; font-size: 11px; margin-bottom: 8px; }
+.q-text { font-size: 16px; line-height: 1.65; color: #1a1a2e; font-weight: 500; margin-bottom: 20px; }
+.options { display: flex; flex-direction: column; gap: 10px; }
+.opt { background: #f8f9fb; border: 2px solid #e0e4ea; border-radius: 9px; padding: 13px 16px; cursor: pointer; font-size: 14px; font-family: inherit; text-align: left; transition: all 0.15s; color: #1a1a2e; display: flex; align-items: flex-start; gap: 12px; }
+.opt:hover:not(:disabled) { border-color: #4a7ab0; background: #eef3fc; }
+.opt.selected { border-color: #1a5fb4; background: #e8f0fe; }
+.opt.correct { border-color: #2d7a3a; background: #e8f8ec; color: #1a4d24; }
+.opt.wrong { border-color: #c0392b; background: #fdf0ee; color: #7a1a1a; }
+.opt:disabled { cursor: default; }
+.opt-letter { font-weight: 700; min-width: 22px; color: #888; }
+.opt.selected .opt-letter, .opt.correct .opt-letter { color: inherit; }
+.explanation { background: #fffbeb; border-left: 4px solid #f0a500; border-radius: 0 8px 8px 0; padding: 12px 16px; margin-top: 14px; font-size: 13px; color: #5a4000; line-height: 1.6; }
+.nav-row { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; }
+.nav-btn { background: #1e2a3a; color: #fff; border: none; border-radius: 9px; padding: 11px 24px; font-size: 14px; font-family: inherit; cursor: pointer; font-weight: 500; transition: background 0.15s; }
+.nav-btn:hover { background: #2d3f52; }
+.nav-btn:disabled { background: #b0b8c8; cursor: not-allowed; }
+.nav-btn.finish { background: #e85d04; }
+.nav-btn.finish:hover { background: #c94d00; }
+.skip-btn { background: none; border: 2px solid #e0e4ea; color: #888; border-radius: 9px; padding: 11px 20px; font-size: 14px; font-family: inherit; cursor: pointer; }
+.skip-btn:hover { border-color: #4a7ab0; color: #1a5fb4; }
+.tf-opts { display: flex; gap: 12px; }
+.tf-opt { flex: 1; background: #f8f9fb; border: 2px solid #e0e4ea; border-radius: 9px; padding: 14px; cursor: pointer; font-size: 15px; font-family: inherit; font-weight: 600; text-align: center; transition: all 0.15s; }
+.tf-opt:hover:not(:disabled) { border-color: #4a7ab0; background: #eef3fc; }
+.tf-opt.selected { border-color: #1a5fb4; background: #e8f0fe; }
+.tf-opt.correct { border-color: #2d7a3a; background: #e8f8ec; }
+.tf-opt.wrong { border-color: #c0392b; background: #fdf0ee; }
+.results-card { background: #fff; border-radius: 12px; padding: 28px; margin-bottom: 16px; text-align: center; }
+.score-circle { width: 130px; height: 130px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 0 auto 16px; border: 6px solid #1a5fb4; }
+.score-circle.pass { border-color: #2d7a3a; }
+.score-circle.fail { border-color: #c0392b; }
+.score-pct { font-size: 36px; font-weight: 700; }
+.score-pct.pass { color: #2d7a3a; }
+.score-pct.fail { color: #c0392b; }
+.score-label { font-size: 13px; color: #888; }
+.pass-fail { font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+.pass-fail.pass { color: #2d7a3a; }
+.pass-fail.fail { color: #c0392b; }
+.stats-row { display: flex; justify-content: center; gap: 24px; margin: 18px 0; flex-wrap: wrap; }
+.stat { text-align: center; }
+.stat-val { font-size: 24px; font-weight: 700; color: #1e2a3a; }
+.stat-label { font-size: 12px; color: #888; }
+.review-section { background: #fff; border-radius: 12px; padding: 20px; margin-bottom: 12px; }
+.review-section h3 { font-size: 15px; font-weight: 600; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid #e0e4ea; }
+.review-q { padding: 12px 0; border-bottom: 1px solid #f0f2f5; }
+.review-q:last-child { border-bottom: none; }
+.review-q-text { font-size: 14px; font-weight: 500; margin-bottom: 6px; }
+.review-answer { font-size: 13px; color: #888; }
+.review-answer .correct-ans { color: #2d7a3a; font-weight: 600; }
+.review-answer .wrong-ans { color: #c0392b; font-weight: 600; }
+.back-btn { background: #1e2a3a; color: #fff; border: none; border-radius: 10px; padding: 12px 28px; font-size: 15px; font-family: inherit; cursor: pointer; font-weight: 500; margin: 0 6px; }
+.back-btn:hover { background: #2d3f52; }
+.section-break { background: #f0f2f5; border-radius: 8px; padding: 14px 18px; margin-bottom: 14px; font-size: 14px; color: #444; border-left: 4px solid #1a5fb4; }
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="header">
+    <h1>CFE Quiz &amp; Exam Simulator</h1>
+    <span class="badge">ACFE 2025</span>
+  </div>
+  <div id="home-screen" class="active">
+    <div class="mode-grid">
+      <div class="mode-card" id="card-quiz" onclick="selectMode('quiz')">
+        <div class="icon">📝</div>
+        <h3>Section Quiz</h3>
+        <p>30 randomized questions per section</p>
+      </div>
+      <div class="mode-card" id="card-exam" onclick="selectMode('exam')">
+        <div class="icon">🎯</div>
+        <h3>Full Exam</h3>
+        <p>310 questions, 5 versions, timed</p>
+      </div>
+    </div>
+    <div class="section-select" id="quiz-options" style="display:none">
+      <h2>Select Section for Quiz</h2>
+      <div class="sec-btns">
+        <button class="sec-btn" onclick="selectSection(0)">Fraud Schemes &amp; Financial Crimes</button>
+        <button class="sec-btn" onclick="selectSection(1)">Fraud Investigations &amp; Legal Issues</button>
+        <button class="sec-btn" onclick="selectSection(2)">Fraud Prevention &amp; Deterrence</button>
+      </div>
+    </div>
+    <div class="section-select" id="exam-options" style="display:none">
+      <h2>Select Exam Version (all 5 are fully randomized)</h2>
+      <div class="exam-ver" id="ver-btns"></div>
+    </div>
+    <div style="text-align:center;margin-top:20px;">
+      <button class="start-btn" id="start-btn" onclick="startSession()" disabled>Start</button>
+    </div>
+  </div>
+  <div id="quiz-screen">
+    <div class="quiz-header">
+      <div class="quiz-info">
+        <div><strong id="qh-title">Quiz</strong></div>
+        <div id="qh-info" style="margin-top:2px;"></div>
+      </div>
+      <div class="progress-wrap">
+        <div class="prog-bar"><div class="prog-fill" id="prog-fill"></div></div>
+        <div class="prog-label" id="prog-label"></div>
+      </div>
+      <div class="timer-box" id="timer-box">—</div>
+    </div>
+    <div id="q-area"></div>
+    <div class="nav-row">
+      <button class="nav-btn" id="prev-btn" onclick="prevQ()">← Previous</button>
+      <button class="skip-btn" id="skip-btn" onclick="skipQ()">Skip</button>
+      <button class="nav-btn" id="next-btn" onclick="nextQ()">Next →</button>
+    </div>
+  </div>
+  <div id="results-screen">
+    <div class="results-card" id="results-summary"></div>
+    <div id="review-area"></div>
+    <div style="text-align:center;margin:20px 0;">
+      <button class="back-btn" onclick="goHome()">← New Session</button>
+      <button class="back-btn" onclick="retakeSession()">↺ Retake</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SECTIONS = ["Fraud Schemes & Financial Crimes","Fraud Investigations & Legal Issues","Fraud Prevention & Deterrence"];
+
+const QS = {
+0: [ // Fraud Schemes & Financial Crimes - 180+ questions for exam
+{q:"Which of the following best describes 'skimming' in asset misappropriation?",type:"mc",opts:["Theft of cash after it is recorded in accounting records","Theft of cash before it enters the accounting records","Falsifying invoices to divert payments","Altering check payee names"],ans:1,exp:"Skimming is an 'off-the-books' theft of cash before it is recorded. Because no record exists, there is no discrepancy to detect without independent verification of transactions."},
+{q:"Lapping is a concealment technique that involves:",type:"mc",opts:["Destroying financial records","Applying one customer's payment to cover a theft from another customer's account","Creating fictitious employees on payroll","Double-counting inventory"],ans:1,exp:"Lapping involves misapplying subsequent payments to cover earlier thefts, creating a perpetual cycle that can continue as long as new payments arrive."},
+{q:"A company consistently reports high net income but low operating cash flow. This pattern is most indicative of:",type:"mc",opts:["Excellent accrual accounting","Potential financial statement fraud","Conservative revenue recognition","Strong internal controls"],ans:1,exp:"A persistent divergence between reported earnings and operating cash flow is a red flag because cash flows are harder to manipulate than accrual entries. This pattern can indicate earnings manipulation."},
+{q:"Which financial statement provides a snapshot of financial position at a specific point in time?",type:"mc",opts:["Income statement","Statement of cash flows","Balance sheet","Statement of retained earnings"],ans:2,exp:"The balance sheet shows assets, liabilities, and equity at a specific date — a snapshot. The income statement covers a period, and the cash flow statement also covers a period."},
+{q:"The FCPA (Foreign Corrupt Practices Act) primarily prohibits:",type:"mc",opts:["Domestic bribery of private sector employees","Bribery of foreign government officials to obtain or retain business","Tax evasion by U.S. corporations","Insider trading in foreign securities markets"],ans:1,exp:"The FCPA prohibits U.S. persons and companies (and foreign companies with U.S. listings) from paying bribes to foreign officials. It also requires accurate books/records and adequate internal controls."},
+{q:"A ghost employee scheme involves:",type:"mc",opts:["Inflating hours worked by real employees","Adding fictitious or terminated employees to payroll and diverting their paychecks","Paying employees in cash to avoid taxes","Paying overtime without proper authorization"],ans:1,exp:"Ghost employee schemes involve maintaining fictitious or already-terminated employees on payroll records and then stealing or diverting their pay through various methods."},
+{q:"Which of the following is a characteristic of shell company fraud?",type:"mc",opts:["The vendor has a verifiable physical address and employees","Invoices are submitted for goods or services actually received","The vendor is typically owned or controlled by the fraudster","The scheme requires collusion with a customer"],ans:2,exp:"In shell company fraud, the fraudster creates (or uses) a fictitious vendor company, submits invoices for goods/services never provided, and receives the payments. The shell company is controlled by the perpetrator."},
+{q:"The Beneish M-Score is primarily used to:",type:"mc",opts:["Calculate a company's credit risk","Detect the potential for financial statement manipulation","Measure market risk in investment portfolios","Assess the effectiveness of internal controls"],ans:1,exp:"The Beneish M-Score is a mathematical model using financial ratios to identify companies that may be manipulating earnings. A score above −1.78 suggests possible manipulation."},
+{q:"Revenue overstatement through 'channel stuffing' involves:",type:"mc",opts:["Booking revenue before the product is manufactured","Shipping excess product to distributors with undisclosed return rights to inflate sales","Recording fictitious revenue from customers who don't exist","Recognizing subscription revenue all at once"],ans:1,exp:"Channel stuffing involves shipping more product than distributors can sell, often with informal side agreements allowing returns, thereby artificially inflating revenue at period end."},
+{q:"Business Email Compromise (BEC) fraud most commonly targets:",type:"mc",opts:["Retail customers through phishing websites","Organizations' wire transfer and payment processes by impersonating executives","Government databases to steal tax information","Stock exchanges through spoofed trading orders"],ans:1,exp:"BEC exploits legitimate business email accounts or impersonates executives to pressure employees into transferring funds or changing payment account information, often urgently and confidentially."},
+{q:"In the context of payroll fraud, 'falsified hours' schemes are best detected by:",type:"mc",opts:["Reviewing vendor invoices for unusual patterns","Requiring physical time clocks and reconciling timesheets with supervisor approvals","Analyzing accounts payable aging","Reviewing capitalized costs"],ans:1,exp:"Falsified hours are detected by implementing robust timekeeping controls — physical attendance records, electronic swipe systems, and supervisory approval of timesheets — and reconciling them against payroll."},
+{q:"Which of the following is a red flag for a potential billing fraud scheme?",type:"mc",opts:["A vendor with multiple employee contacts","A vendor whose address matches that of an employee","A vendor with a long payment history","A vendor invoice with a detailed description of services"],ans:1,exp:"A vendor sharing an address with an employee is a classic red flag for shell company or kickback schemes, suggesting the employee may be the true beneficiary of payments."},
+{q:"Financial statement fraud differs from asset misappropriation in that financial statement fraud:",type:"mc",opts:["Is more common and involves smaller median losses","Primarily benefits the individual perpetrator","Primarily benefits the organization (at least initially) and involves larger losses","Always requires collusion"],ans:2,exp:"Financial statement fraud typically benefits the organization (or its senior management through stock options) by making the company appear healthier, and involves far larger median losses than asset misappropriation."},
+{q:"An employee who forges a supervisor's signature on company checks is committing:",type:"mc",opts:["Skimming","Check tampering","Lapping","Expense reimbursement fraud"],ans:1,exp:"Check tampering involves the physical manipulation of company checks, including forging signatures, altering payee names, or creating counterfeit checks, to divert funds to unauthorized recipients."},
+{q:"The fundamental accounting equation is:",type:"mc",opts:["Revenue − Expenses = Net Income","Assets = Liabilities + Equity","Cash Inflows = Cash Outflows","Debits = Credits + Adjustments"],ans:1,exp:"The fundamental accounting equation is Assets = Liabilities + Equity. This equation must always remain balanced; fraud often involves manipulating one or more of these components."},
+{q:"True or False: Segregation of duties is only relevant in large organizations with many employees.",type:"tf",opts:["True","False"],ans:1,exp:"False. Segregation of duties is a universal control principle relevant to organizations of all sizes. Smaller organizations may achieve equivalent controls through management oversight, dual approvals, and compensating controls."},
+{q:"True or False: The cash flow statement is generally considered harder to manipulate than the income statement.",type:"tf",opts:["True","False"],ans:0,exp:"True. Cash flows require actual movement of funds, making them harder to fabricate through accrual-based manipulation. This is why divergence between earnings and cash flow is a red flag."},
+{q:"A conflict of interest in the workplace is best described as:",type:"mc",opts:["When two employees disagree about a business decision","When an employee has an undisclosed personal interest that may affect their judgment to the employer's detriment","When an auditor disagrees with management about an accounting estimate","When a manager rejects an employee's vacation request"],ans:1,exp:"A conflict of interest arises when an employee's personal interests (financial, personal, or otherwise) could improperly influence their professional judgment and decisions, especially when undisclosed."},
+{q:"Which of the following best describes the 'round-trip transaction' financial statement fraud technique?",type:"mc",opts:["Recording every transaction twice for redundancy","Two parties simultaneously exchanging funds to create the appearance of revenue without real economic substance","Moving cash in circles through shell companies","Reversing entries at period end to avoid detection"],ans:1,exp:"Round-trip transactions involve two parties simultaneously paying each other, creating the illusion of revenue with no underlying business purpose or real economic substance."},
+{q:"Inventory fraud schemes typically involve which of the following?",type:"mc",opts:["Overstating inventory to increase reported assets and profits","Understating inventory to reduce taxes","Both A and B, depending on the objective","Neither; inventory is rarely targeted in fraud"],ans:2,exp:"Inventory can be manipulated in both directions: overstated to inflate assets/profits (financial statement fraud) or understated to reduce taxes. The method depends on the fraudster's objectives."},
+{q:"The WorldCom accounting fraud primarily involved:",type:"mc",opts:["Revenue inflation through fictitious sales","Capitalization of operating expenses to avoid reducing reported income","Understating liabilities off-balance-sheet","Identity theft of customer accounts"],ans:1,exp:"WorldCom fraudulently capitalized approximately $3.8 billion in operating expenses (primarily line costs), turning them into capital expenditures, thereby avoiding their immediate impact on the income statement."},
+{q:"Which of the following is NOT typically considered a form of asset misappropriation?",type:"mc",opts:["Theft of cash from the register","Fraudulent expense reimbursements","Falsifying financial statements to attract investors","Stealing inventory"],ans:2,exp:"Falsifying financial statements is financial statement fraud, not asset misappropriation. Asset misappropriation involves the theft or misuse of organizational resources (cash, inventory, equipment, etc.)."},
+{q:"A vendor kickback scheme typically involves:",type:"mc",opts:["A vendor paying an employee for favorable contract decisions","An employee stealing directly from vendor shipments","A vendor submitting duplicate invoices","An employee creating a shell vendor without informing management"],ans:0,exp:"In kickback schemes, vendors pay (or provide something of value to) employees who influence purchasing decisions, in exchange for being awarded business, higher prices being approved, or quality issues being overlooked."},
+{q:"Under the double-entry bookkeeping system, each transaction must:",type:"mc",opts:["Be recorded in at least two accounts with debits equaling credits","Be approved by two separate employees","Be recorded in the general ledger and subsidiary ledger simultaneously","Be backed by a physical document"],ans:0,exp:"Double-entry bookkeeping requires that every transaction be recorded as at least one debit and one credit of equal value, maintaining the fundamental equation's balance."},
+{q:"Identity theft in a corporate setting most commonly results in:",type:"mc",opts:["Physical theft of corporate assets","Unauthorized access to financial accounts and fraudulent transactions","Destruction of company property","Harassment of employees"],ans:1,exp:"Corporate identity theft involves stealing credentials (employee or customer data, company information) to access accounts, initiate fraudulent transfers, file tax returns, or open credit lines."},
+{q:"True or False: The FCPA applies only to publicly traded companies.",type:"tf",opts:["True","False"],ans:1,exp:"False. The FCPA applies to 'domestic concerns' (U.S. citizens, nationals, residents, and all U.S. entities and their agents) as well as foreign companies with U.S. exchange listings — it is not limited to public companies."},
+{q:"A company's accounts receivable are significantly higher than the industry average for many consecutive periods. This is most likely a red flag for:",type:"mc",opts:["Excellent credit policy","Potential fictitious revenues or premature revenue recognition","Conservative revenue recognition","Very high sales volume"],ans:1,exp:"Elevated receivables relative to industry peers may indicate fictitious revenues (no actual customer exists to pay) or premature revenue recognition (revenue booked before earned, with collection uncertain)."},
+{q:"Which internal control is MOST effective at detecting expense reimbursement fraud?",type:"mc",opts:["Physical access controls to the server room","Independent review and approval of expense reports with original receipts","Mandatory vacation policies","Background checks at hiring"],ans:1,exp:"Requiring original receipts and having an independent reviewer (not the submitter's direct subordinate) approve expense reports is the most direct control over expense reimbursement fraud."},
+{q:"The WorldCom and Enron frauds both involved which common element?",type:"mc",opts:["Check tampering","Manipulation of financial statements with involvement of senior management","Inventory theft","Ghost employee schemes"],ans:1,exp:"Both WorldCom and Enron involved management-level manipulation of financial statements — WorldCom through expense capitalization and Enron through off-balance-sheet entities — perpetrated or enabled by senior leadership."},
+{q:"Forensic accounting differs from traditional auditing primarily because forensic accounting:",type:"mc",opts:["Is less rigorous and less formal","Focuses on detecting and investigating financial misconduct rather than expressing an opinion on financial statements","Only applies to criminal cases","Does not use sampling techniques"],ans:1,exp:"Forensic accounting applies accounting and investigative skills to legal matters — detecting, investigating, and documenting financial misconduct. Auditing focuses on whether financial statements are fairly presented per applicable standards."},
+{q:"A 'fictitious revenue' scheme is detected by which of the following methods?",type:"mc",opts:["Matching recorded sales to shipping documents and customer confirmations","Reviewing vendor invoices","Reconciling payroll records to HR data","Counting physical cash on hand"],ans:0,exp:"Fictitious revenue detection involves tracing recorded sales back to supporting evidence: shipping records, delivery confirmations, customer order documents, and direct confirmations with customers."},
+{q:"Which of the following correctly describes the 'tone at the top' concept?",type:"mc",opts:["The highest note in a company's advertising jingle","The ethical environment and culture established by senior management and the board","The most important line on the income statement","Physical security at the top floor of corporate offices"],ans:1,exp:"'Tone at the top' refers to the ethical climate, values, and example set by senior leadership. It is widely considered the most influential factor in an organization's fraud risk environment."},
+{q:"Overriding internal controls is most commonly associated with which type of fraud?",type:"mc",opts:["Skimming by front-line employees","Management-level financial statement fraud","Payroll theft by HR employees","Inventory theft by warehouse workers"],ans:1,exp:"Management-level frauds — particularly financial statement fraud — often involve overriding controls because management has the authority and access to do so, which is why the control environment and board oversight are critical."},
+{q:"In a 'pay-and-return' scheme, a fraudster:",type:"mc",opts:["Submits legitimate invoices and keeps the returned goods","Overpays a vendor (who then rebates the excess to the fraudster), splitting the proceeds","Pays himself by creating a vendor account in his own name","Returns purchased goods for cash rather than store credit"],ans:1,exp:"In pay-and-return (or overbilling with kickback) schemes, an employee authorizes inflated vendor payments, and the vendor returns a portion of the excess to the employee — essentially a kickback disguised as a billing error."},
+{q:"Which of the following is a common indicator of fraudulent journal entries?",type:"mc",opts:["Entries prepared by an outside auditor","Entries with unusual descriptions, round numbers, or made by unusual personnel","Entries made at the beginning of a reporting period","Entries that have multiple approvals"],ans:1,exp:"Fraudulent journal entries often have tell-tale signs: round numbers (easy to fabricate), vague or unusual descriptions, entries made just before period close, or made by senior executives who bypass normal entry processes."},
+{q:"True or False: Under the cash flow statement, it is easier to fabricate operating activities than investing activities.",type:"tf",opts:["True","False"],ans:1,exp:"False. All sections of the cash flow statement require actual movement of funds, making them harder to fabricate than accrual-based income statement entries. Manipulation typically involves misclassifying items between sections."},
+],
+1: [ // Fraud Investigations & Legal Issues
+{q:"The primary purpose of the chain of custody in a fraud investigation is to:",type:"mc",opts:["Document the cost of the investigation","Ensure evidence is admissible by tracking its collection, transfer, and handling","Identify all witnesses to the fraud","Create a timeline of the fraudster's actions"],ans:1,exp:"Chain of custody documents every person who handled evidence and all transfers, ensuring no tampering occurred. Gaps in the chain may allow defense challenges to evidence admissibility."},
+{q:"Fraud examinations differ from audits primarily because fraud examinations:",type:"mc",opts:["Use statistical sampling","Are based on a specific allegation or predicate and aim to prove or disprove fraud","Express an opinion on financial statement fairness","Are required by law for all public companies"],ans:1,exp:"Fraud examinations are reactive — triggered by a specific suspicion or allegation (predicate) — and focus on resolving whether fraud occurred, by whom, and how. Audits are proactive and opine on financial statement fairness."},
+{q:"The Federal Mail Fraud statute makes it a crime to:",type:"mc",opts:["Mail threatening letters","Use the U.S. mail in furtherance of a scheme to defraud","Send fraudulent invoices by email","Fail to report mail fraud to authorities"],ans:1,exp:"The mail fraud statute (18 U.S.C. § 1341) prohibits using the mail system as part of any scheme or artifice to defraud — it is the use of mail in furtherance of fraud that is the crime, not the fraud itself."},
+{q:"The Sarbanes-Oxley Act Section 302 requires:",type:"mc",opts:["External auditors to certify financial statements","CEOs and CFOs to personally certify the accuracy of financial reports","Banks to maintain specific capital reserves","All public employees to complete ethics training"],ans:1,exp:"SOX Section 302 requires CEOs and CFOs to personally certify each quarterly and annual report, attesting to the accuracy of the financial statements and the effectiveness of disclosure controls."},
+{q:"During a fraud examination, interviews should generally be conducted in which order?",type:"mc",opts:["Suspects first, then witnesses","Informational witnesses first, then co-conspirators, then the primary suspect last","The most important person first, regardless of role","Randomly, to prevent preparation"],ans:1,exp:"Starting with informational witnesses gathers background without alerting suspects. The subject of the investigation is interviewed last, after all other evidence is gathered, to confront them with a complete factual record."},
+{q:"The 'best evidence rule' in federal court generally provides that:",type:"mc",opts:["Eyewitness testimony is always the best evidence","Original documents must be produced, though duplicates are generally admissible","Digital evidence is inadmissible","Hearsay is never admissible"],ans:1,exp:"The best evidence rule prefers originals when document contents are at issue, but the Federal Rules of Evidence allow duplicates (photocopies, digital copies) unless authenticity is genuinely disputed."},
+{q:"Metadata in electronic documents can reveal which of the following?",type:"mc",opts:["Only the document's formatting","Creation date, modification date, author, and what software was used","The document's encryption key","Only information visible in the document itself"],ans:1,exp:"Electronic file metadata contains 'data about data' — including creation date, last-modified date, author username, software used, and revision history — which can contradict the apparent face of a document."},
+{q:"Which of the following best describes the 'predicate' requirement for commencing a fraud examination?",type:"mc",opts:["A court order authorizing the investigation","A reasonable basis for believing fraud may have occurred","The written consent of all employees","A completed financial audit showing irregularities"],ans:1,exp:"Predicate is the foundation for launching a fraud investigation — some reasonable basis for believing fraud may have occurred, such as a tip, audit anomaly, or specific complaint. Without predicate, an examination should not begin."},
+{q:"Under the PEACE model of interviewing, the primary objective is:",type:"mc",opts:["Obtaining a confession from the suspect","Gathering accurate and complete information","Confronting the subject with evidence","Building a legal case for prosecution"],ans:1,exp:"The PEACE model (Preparation, Engage/Explain, Account, Closure, Evaluate) emphasizes information-gathering over confession-seeking, reducing the risk of false confessions associated with more confrontational models."},
+{q:"The attorney-client privilege protects:",type:"mc",opts:["All communications between any two attorneys","Confidential communications between attorney and client for the purpose of legal advice","Communications about future crimes","All work product of any employee during a legal matter"],ans:1,exp:"Attorney-client privilege applies specifically to confidential communications between an attorney and their client made for the purpose of seeking or providing legal advice. It does not protect communications made to facilitate a future crime."},
+{q:"A fraud examiner working for defense counsel creates work papers during a fraud investigation. These work papers are MOST likely protected under:",type:"mc",opts:["The Fifth Amendment","The work product doctrine","HIPAA","The Freedom of Information Act"],ans:1,exp:"Work product doctrine protects materials prepared by or for an attorney in anticipation of litigation. When a fraud examiner is engaged by counsel, their work papers typically receive this protection, though it can be waived."},
+{q:"For mail and wire fraud convictions, the maximum federal prison sentence per count is:",type:"mc",opts:["5 years","20 years (30 years if involving a financial institution)","10 years","Life imprisonment"],ans:1,exp:"Standard mail/wire fraud carries up to 20 years per count. If the fraud involves a financial institution or is related to a federal disaster or emergency, the penalty increases to 30 years per count."},
+{q:"A 'cognitive interview' technique is primarily designed to:",type:"mc",opts:["Induce stress to elicit confessions","Help witnesses recall events more accurately through context reinstatement","Detect deception through physiological responses","Speed up the interview process"],ans:1,exp:"The cognitive interview uses memory psychology techniques (context reinstatement, free recall, reverse order, perspective change) to maximize the quantity and quality of information recalled by cooperative witnesses."},
+{q:"Which of the following BEST describes 'hearsay' evidence?",type:"mc",opts:["All testimony from non-expert witnesses","An out-of-court statement offered to prove the truth of the matter asserted","Physical evidence that cannot be authenticated","Testimony from a witness with no personal knowledge"],ans:1,exp:"Hearsay is an out-of-court statement offered in court to prove the truth of its content. The Federal Rules of Evidence generally exclude hearsay but contain many specific exceptions (over 30 in FRE 803 and 804)."},
+{q:"The Foreign Corrupt Practices Act has two main components: an anti-bribery provision and:",type:"mc",opts:["A mandatory reporting provision requiring disclosure of all foreign payments","Accounting provisions requiring accurate books/records and adequate internal controls","A whistleblower protection provision","A criminal forfeiture provision"],ans:1,exp:"The FCPA's accounting provisions independently require that issuers maintain accurate books/records reflecting transactions and assets, and devise adequate internal accounting controls — regardless of whether bribery occurred."},
+{q:"True or False: Private-sector fraud examiners are required to issue Miranda warnings before interviewing a suspect.",type:"tf",opts:["True","False"],ans:1,exp:"False. Miranda warnings are required for custodial interrogations by law enforcement. Private-sector fraud examiners are not government agents and are not required to issue Miranda warnings, though subjects always retain the right to decline to answer."},
+{q:"Under federal law, computer fraud offenses are primarily prosecuted under:",type:"mc",opts:["The Sherman Antitrust Act","The Computer Fraud and Abuse Act (CFAA)","HIPAA","The Electronic Communications Privacy Act"],ans:1,exp:"The Computer Fraud and Abuse Act (18 U.S.C. § 1030) is the primary federal statute addressing unauthorized computer access, computer fraud, and related offenses."},
+{q:"Statement analysis in a fraud investigation involves:",type:"mc",opts:["Analyzing financial statements for discrepancies","Examining the language of written or verbal statements for deception indicators","Reviewing bank statements for unusual activity","Analyzing customer complaint records"],ans:1,exp:"Statement analysis examines linguistic patterns in subject statements — passive vs. active voice, pronoun usage, areas of vagueness, proportion of time devoted to different narrative segments — as potential deception indicators."},
+{q:"The RICO (Racketeer Influenced and Corrupt Organizations Act) statute is significant for fraud investigations because it:",type:"mc",opts:["Only applies to organized crime families","Allows prosecution of organizations and patterns of racketeering, not just individual acts","Requires a minimum of ten co-conspirators","Only applies to violent crimes"],ans:1,exp:"RICO allows prosecutors to target the organization or enterprise through which fraud is conducted, not just individual acts. It requires proof of a pattern of racketeering activity (at least two predicate acts within ten years) and carries significant penalties."},
+{q:"When documenting a fraud investigation, work papers should be:",type:"mc",opts:["Destroyed after the investigation concludes to protect confidentiality","Contemporaneous, organized, and sufficient to support all findings and conclusions","Shared freely with all parties involved in the matter","Limited to a one-page summary of findings"],ans:1,exp:"Work papers must be contemporaneous (prepared at the time of examination activities), complete, organized, and sufficient to allow an independent reviewer to understand what was done, what was found, and how conclusions were reached."},
+{q:"The 'right against self-incrimination' under the Fifth Amendment applies to:",type:"mc",opts:["All persons in all settings, including private workplace investigations","Persons in government proceedings who are compelled to testify against themselves","All corporate employees regarding their work activities","Only persons already under arrest"],ans:1,exp:"The Fifth Amendment applies to government-compelled testimony. In private-sector investigations, there is no Fifth Amendment protection — employees can be required to answer under penalty of employment termination, though those answers cannot be directly used in criminal proceedings against them."},
+{q:"True or False: The work product doctrine and attorney-client privilege are identical protections.",type:"tf",opts:["True","False"],ans:1,exp:"False. They are distinct but related doctrines. Attorney-client privilege protects confidential attorney-client communications for legal advice purposes. Work product doctrine protects materials prepared in anticipation of litigation (which may include non-attorney work product)."},
+{q:"Digital forensics in a fraud investigation may involve which of the following?",type:"mc",opts:["Only recovery of deleted files","Recovery of deleted files, examination of metadata, analysis of email communications, and preservation of digital evidence","Hacking into employee personal devices","Physical examination of the office premises"],ans:1,exp:"Digital forensics encompasses the identification, preservation, extraction, and analysis of digital evidence — including deleted files, metadata, email archives, browser history, and system logs — following procedures that maintain evidence integrity."},
+{q:"In a fraud examination, 'net worth analysis' is a technique used to:",type:"mc",opts:["Determine the fair value of the company being investigated","Identify unexplained increases in a suspect's wealth by comparing assets, liabilities, and income","Calculate the total loss from a fraud","Assess the company's liquidity"],ans:1,exp:"Net worth analysis tracks a suspect's financial position over time. Unexplained increases in net worth — where spending and asset accumulation exceed documented income — can indicate undisclosed income from fraudulent sources."},
+{q:"The primary purpose of a Suspicious Activity Report (SAR) is to:",type:"mc",opts:["Report employee misconduct to the HR department","Alert financial intelligence units (like FinCEN) to potential money laundering or fraud","Request a search warrant for a suspect's home","Notify customers of potential data breaches"],ans:1,exp:"SARs are filed by financial institutions with FinCEN (Financial Crimes Enforcement Network) when they detect transactions that may involve money laundering, terrorism financing, or other suspicious financial activity."},
+{q:"Evidence collected through an illegal search by a government agent is generally:",type:"mc",opts:["Admissible if it is reliable","Inadmissible under the exclusionary rule","Admissible with a curative instruction to the jury","Admissible only in civil proceedings"],ans:1,exp:"The Fourth Amendment's exclusionary rule prohibits the use of evidence obtained through unconstitutional government searches in criminal proceedings. This rule applies to government actors, not private investigators."},
+{q:"True or False: An employer can require an employee to answer questions in an internal investigation without triggering self-incrimination concerns.",type:"tf",opts:["True","False"],ans:0,exp:"True. Because the Fifth Amendment only applies to government compulsion, private employers can require employee cooperation in internal investigations. However, Garrity warnings may be relevant if law enforcement is involved or if criminal prosecution is anticipated."},
+{q:"Which of the following is a legitimate source of information that can be used in a fraud investigation without a subpoena?",type:"mc",opts:["Sealed court records","Publicly available records such as property records, court filings, and corporate registrations","Personal bank account records of a suspect","Private emails not related to company business"],ans:1,exp:"Public records — including property records, UCC filings, court records, corporate registrations, and property tax records — are freely available to investigators without legal process and are valuable in fraud investigations."},
+{q:"The Ponzi scheme is best described as:",type:"mc",opts:["A legitimate high-yield investment strategy","A fraudulent investment where returns to earlier investors are paid from contributions of later investors","A government-backed bond program","A tax avoidance structure"],ans:1,exp:"In a Ponzi scheme, the operator pays early investors with money from new investors rather than from legitimate investment returns, creating the illusion of a profitable enterprise while the scheme grows unsustainably until it collapses."},
+{q:"During an interview, a subject's use of passive voice when describing their role in a key transaction may indicate:",type:"mc",opts:["Strong command of the English language","Potential distancing from the events — a possible deception indicator","A foreign language background","Nothing relevant to the investigation"],ans:1,exp:"In statement analysis, passive voice ('the invoices were approved' rather than 'I approved the invoices') may indicate a subject distancing themselves from their role in events — a potential deception indicator worth exploring."},
+{q:"The 'exclusionary rule' in U.S. criminal proceedings applies to:",type:"mc",opts:["All improperly obtained evidence in any proceeding","Evidence obtained by government agents in violation of constitutional rights","Evidence gathered by private investigators","Evidence that is more prejudicial than probative"],ans:1,exp:"The exclusionary rule specifically applies to evidence obtained by government agents (police, prosecutors) in violation of the Fourth, Fifth, or Sixth Amendments. It does not apply to private party searches in most circumstances."},
+],
+2: [ // Fraud Prevention & Deterrence
+{q:"According to Donald Cressey's Fraud Triangle, the three elements necessary for occupational fraud are:",type:"mc",opts:["Greed, Access, and Arrogance","Pressure, Opportunity, and Rationalization","Intelligence, Motive, and Method","Deception, Concealment, and Conversion"],ans:1,exp:"Cressey's Fraud Triangle identifies Pressure (a non-shareable financial problem), Opportunity (ability to commit and conceal the fraud), and Rationalization (justifying the act) as the three elements present in most fraud cases."},
+{q:"The Fraud Diamond added which fourth element to the Fraud Triangle?",type:"mc",opts:["Greed","Authority","Capability","Collusion"],ans:2,exp:"David Wolfe and Dana Hermanson added 'Capability' — the personal traits enabling someone to actually commit fraud (intelligence, technical skills, authority, confidence, and ability to handle ongoing stress of deception)."},
+{q:"Edwin Sutherland's 'differential association theory' proposes that criminal behavior:",type:"mc",opts:["Is primarily the result of mental illness","Is learned through association with others who hold favorable attitudes toward crime","Is predetermined by genetic factors","Is caused by poverty and economic deprivation"],ans:1,exp:"Differential association theory holds that criminal behavior, including white-collar crime, is learned in interaction with others — if a person's associations provide more favorable definitions of law violation than unfavorable ones, they are likely to engage in crime."},
+{q:"According to ACFE research, which fraud detection method consistently identifies the most frauds?",type:"mc",opts:["External audits","Tips from employees, customers, or others","Management review","Internal audits"],ans:1,exp:"ACFE Occupational Fraud Reports consistently show that tips are the most common fraud detection method, accounting for a plurality of discovered frauds — typically around 40-45% of cases — far exceeding any other detection method."},
+{q:"A fraud risk assessment is best described as:",type:"mc",opts:["An annual financial audit conducted by external auditors","A systematic process to identify and assess an organization's exposure to fraud risks","A background check on all new employees","A review of past fraud cases in the organization"],ans:1,exp:"A fraud risk assessment identifies inherent fraud risks given the organization's industry and activities, evaluates whether existing controls adequately mitigate those risks, and identifies gaps requiring attention. It is foundational to fraud prevention."},
+{q:"The COSO framework for internal controls identifies how many components?",type:"mc",opts:["Three","Four","Five","Seven"],ans:2,exp:"COSO's Internal Control — Integrated Framework identifies five components: Control Environment, Risk Assessment, Control Activities, Information and Communication, and Monitoring Activities. The Control Environment is considered the foundation."},
+{q:"Under Sarbanes-Oxley Section 806, which employees receive whistleblower protection?",type:"mc",opts:["Only internal auditors","Only senior executives who report fraud","Employees of publicly traded companies who report potential securities fraud or violations","Only whistleblowers who remain anonymous"],ans:2,exp:"SOX Section 806 protects employees of publicly traded companies (and their contractors, subcontractors, and affiliates) from retaliation for reporting potential violations of securities laws, SEC rules, or fraud against shareholders."},
+{q:"The 'tone at the top' concept is MOST important because:",type:"mc",opts:["It determines the CEO's salary structure","The ethical culture set by leadership is the most influential factor in whether employees commit fraud","It is required by securities regulations","It increases investor confidence in financial statements"],ans:1,exp:"Research consistently shows that the ethical environment modeled by senior leadership — 'tone at the top' — has the greatest influence on organizational fraud risk. When leaders model ethical behavior, employees are less likely to rationalize fraud."},
+{q:"Which of the following is the BEST description of a hotline's role in fraud prevention?",type:"mc",opts:["It primarily detects fraud after it has already caused significant losses","It serves as a deterrent and early-warning system, catching fraud sooner with smaller losses","It eliminates the need for other anti-fraud controls","It is primarily useful only in large organizations"],ans:1,exp:"Hotlines serve as both a deterrent (employees know concerns can be reported) and an early-warning system. ACFE data shows organizations with hotlines suffer smaller fraud losses and detect fraud more quickly than those without."},
+{q:"A narcissistic personality trait in a potential fraudster is significant because:",type:"mc",opts:["Narcissists never commit fraud due to fear of consequences","Such individuals may have a sense of entitlement that helps them rationalize fraudulent behavior","Narcissism is a diagnosed mental disorder that creates legal defenses","Narcissists are easier to detect than other fraudsters"],ans:1,exp:"Research on white-collar offenders shows that narcissistic traits — including entitlement, lack of empathy, and willingness to exploit others — facilitate the rationalization element of the Fraud Triangle and are overrepresented among major fraud perpetrators."},
+{q:"The 'pressure' element of the Fraud Triangle at the management level often involves:",type:"mc",opts:["Personal financial emergencies","Organizational pressure to meet earnings targets or executive compensation tied to financial metrics","Gambling debts","Childhood trauma"],ans:1,exp:"While individual employees may face personal financial pressure, management fraud is often driven by organizational pressures: meeting Wall Street expectations, performance-based compensation, avoiding disclosure of poor results, or retaining investor confidence."},
+{q:"An effective fraud prevention program should include which of the following?",type:"mc",opts:["A code of ethics and a confidential reporting mechanism","Only increased surveillance of employees","Reducing access controls to encourage transparency","Eliminating all vendor relationships"],ans:0,exp:"Comprehensive fraud prevention programs include a strong code of ethics, anonymous reporting mechanisms (hotlines), adequate internal controls, fraud risk assessments, employee training, and proactive data monitoring — all working together."},
+{q:"True or False: Fraud deterrence and fraud detection are the same thing.",type:"tf",opts:["True","False"],ans:1,exp:"False. Deterrence involves measures that prevent fraud from occurring in the first place (controls, culture, training). Detection involves measures that identify fraud that has occurred (audits, monitoring, hotlines). Both are essential but distinct."},
+{q:"The ACFE Code of Professional Ethics requires CFEs to maintain which of the following?",type:"mc",opts:["Confidentiality but not objectivity","Objectivity, honesty, competence, and confidentiality","Absolute certainty before making any findings","Loyalty to the client at all costs"],ans:1,exp:"The ACFE Code of Professional Ethics establishes four core principles: Honesty (truthfulness in professional matters), Objectivity (avoiding bias and conflicts of interest), Competence (adequate skills for engagements), and Confidentiality (protecting client information)."},
+{q:"Which of the following corporate governance mechanisms is MOST important for detecting management fraud?",type:"mc",opts:["A strong HR department","An independent, active audit committee with financial expertise","A comprehensive employee handbook","A company-wide fitness program"],ans:1,exp:"An independent audit committee composed of directors with financial expertise, free from management influence, and actively overseeing financial reporting and internal controls is the most important governance mechanism for detecting management fraud."},
+{q:"True or False: Once employees rationalize a small fraud, they may have difficulty stopping because each subsequent act becomes easier to justify.",type:"tf",opts:["True","False"],ans:0,exp:"True. Fraud research shows a normalization process — the first fraudulent act is the hardest to justify. Once crossed, the psychological threshold lowers with each subsequent act, often leading to escalating fraud amounts over time."},
+{q:"The Occupational Safety and Health Administration (OSHA) administers whistleblower protection for which of the following?",type:"mc",opts:["Only workplace safety complaints","Complaints under Sarbanes-Oxley and many other federal whistleblower statutes","Only federal government employees","Only financial institution employees"],ans:1,exp:"OSHA administers whistleblower protection programs under over 20 federal statutes, including SOX, Dodd-Frank, the False Claims Act, and others. It investigates whistleblower retaliation complaints in these areas."},
+{q:"According to the COSO Fraud Risk Management Guide, fraud risk management should be:",type:"mc",opts:["A one-time assessment conducted every 5 years","An ongoing, adaptive process that responds to changing organizational risks and conditions","Delegated entirely to the external auditor","Limited to financial fraud risks"],ans:1,exp:"The COSO Fraud Risk Management Guide emphasizes that fraud risk management is a continuous process — not a one-time activity — that must evolve with the organization's changing risk environment, business activities, and external conditions."},
+{q:"A CFE who discovers evidence of fraud against a client they are investigating for fraud prevention purposes should:",type:"mc",opts:["Immediately contact law enforcement","Report the findings to the engaging party and follow their instructions on next steps, while maintaining professional integrity","Discard the evidence to protect the client","Ignore the evidence as it is outside the scope of the engagement"],ans:1,exp:"CFEs must report findings to the engaging party (typically the client's legal counsel or audit committee), maintaining professional integrity. The decision to involve law enforcement rests with the engaging party, not the CFE alone."},
+{q:"An employee who has worked in the same position for 10 years with no vacation may be a red flag because:",type:"mc",opts:["They are too experienced to commit fraud","Continuous presence may indicate they are concealing a fraud that would be discovered in their absence","They are probably close to retirement","They have too much institutional knowledge"],ans:1,exp:"Mandatory vacation and job rotation are classic anti-fraud controls. Employees who never take time off or who resist rotation may be maintaining a fraud that requires their continuous presence to conceal (such as a lapping scheme)."},
+{q:"The concept of 'reasonable assurance' in internal controls means:",type:"mc",opts:["All fraud will be prevented","Controls provide an absolute guarantee against all losses","Controls reduce risk to an acceptable level at a reasonable cost, acknowledging no system eliminates all risk","Management must personally review every transaction"],ans:2,exp:"'Reasonable assurance' acknowledges that internal controls cannot provide absolute protection — the cost of perfect controls would exceed their benefit. Controls should reduce risks to acceptable levels cost-effectively, with inherent limitations acknowledged."},
+{q:"Which type of fraud perpetrator is most common in occupational fraud cases according to ACFE research?",type:"mc",opts:["External parties","Managers","Employees (non-management)","Senior executives"],ans:2,exp:"ACFE research consistently shows that non-management employees commit the most cases of occupational fraud, though managers and executives cause higher median losses per scheme. Employees represent the largest volume of perpetrators."},
+{q:"True or False: The bigger the organization, the lower its fraud risk because it has more resources for controls.",type:"tf",opts:["True","False"],ans:1,exp:"False. Larger organizations face significant fraud risks due to complexity, delegation of authority, and greater anonymity. Size provides resources for controls but also creates more opportunities for fraud, more potential perpetrators, and more complexity in oversight."},
+{q:"An anti-fraud program that includes job rotation and mandatory vacation specifically addresses which element of the Fraud Triangle?",type:"mc",opts:["Pressure","Opportunity","Rationalization","All three elements equally"],ans:1,exp:"Job rotation and mandatory vacation directly reduce opportunity by ensuring no single employee maintains continuous, uninterrupted control over assets and records — precisely the condition that allows concealment schemes like lapping to persist."},
+{q:"A CFE who discovers their own employer is committing fraud faces which MOST significant professional obligation?",type:"mc",opts:["Immediately reporting to law enforcement without informing anyone internally","Staying silent to protect their employment","Reporting through appropriate channels (such as the audit committee or legal counsel) while protecting their own legal rights","Immediately resigning without reporting"],ans:2,exp:"CFEs facing internal fraud by their employer should report through appropriate channels (audit committee, board, legal counsel, or whistleblower programs), document their concerns and reports, and consult their own attorney regarding whistleblower protections."},
+{q:"The False Claims Act allows:",type:"mc",opts:["Only government attorneys to file fraud suits against contractors","Private citizens (qui tam relators) to file lawsuits on behalf of the government and share in any recovery","Fraud victims to file class action suits","Corporations to sue employees who commit fraud"],ans:1,exp:"The False Claims Act's qui tam provisions allow private citizens (whistleblowers/relators) to file lawsuits on behalf of the U.S. government against those who defraud the government, receiving a percentage (15-30%) of any recovery."},
+{q:"Ethics training for employees is most effective when it:",type:"mc",opts:["Is delivered only once during new hire orientation","Is reinforced regularly, includes realistic scenarios, and is supported by visible management commitment","Is restricted to the compliance department","Focuses exclusively on legal requirements"],ans:1,exp:"Effective ethics training goes beyond one-time orientation to include regular reinforcement, realistic scenario-based learning that employees can relate to their work, and visible modeling by senior leaders — all of which reinforce the seriousness of ethical conduct."},
+{q:"True or False: A CFE may share confidential investigation information with the media if they believe it serves the public interest.",type:"tf",opts:["True","False"],ans:1,exp:"False. The ACFE Code requires CFEs to maintain confidentiality of information acquired during engagements. Sharing confidential information with the media without authorization violates this obligation, regardless of the perceived public interest."},
+{q:"Which of the following best describes 'management override' of internal controls?",type:"mc",opts:["When IT managers change system access permissions","When senior management uses their authority to circumvent controls designed to prevent or detect fraud","When the board overrides a management decision","When external auditors override management's accounting estimates"],ans:1,exp:"Management override involves senior executives using their authority and position to circumvent controls — approving unusual transactions, making top-side journal entries, or pressuring subordinates to bypass procedures — enabling management-level fraud."},
+{q:"The concept of 'reasonable suspicion' as a predicate for a fraud examination requires:",type:"mc",opts:["Absolute proof of fraud","A specific allegation, anomaly, or information providing a rational basis to believe fraud may have occurred","A court order","Approval from the board of directors"],ans:1,exp:"Predicate (reasonable suspicion) requires something more than a vague feeling but less than certainty — a specific tip, audit anomaly, complaint, or pattern of facts that, taken together, provide a rational basis for investigation."},
+{q:"According to ACFE research, which factor is MOST effective at reducing the duration and cost of fraud?",type:"mc",opts:["External audits","Anti-fraud training","Proactive data monitoring and analysis","Having an internal audit department"],ans:2,exp:"ACFE research shows that proactive data monitoring and analysis — continuously analyzing transactions for anomalies — is one of the most effective methods for reducing both the duration of undetected fraud and the resulting losses."},
+],
+};
+
+let mode = null;
+let selectedSection = null;
+let examVersion = null;
+let questions = [];
+let answers = [];
+let current = 0;
+let timerInterval = null;
+let timeLeft = 0;
+let lastMode = null;
+
+function selectMode(m) {
+  mode = m;
+  lastMode = m;
+  document.getElementById('card-quiz').classList.toggle('selected', m === 'quiz');
+  document.getElementById('card-exam').classList.toggle('selected', m === 'exam');
+  document.getElementById('quiz-options').style.display = m === 'quiz' ? 'block' : 'none';
+  document.getElementById('exam-options').style.display = m === 'exam' ? 'block' : 'none';
+  if (m === 'exam') {
+    buildVerBtns();
+    document.getElementById('start-btn').disabled = examVersion === null;
+  } else {
+    document.getElementById('start-btn').disabled = selectedSection === null;
+  }
+}
+
+function buildVerBtns() {
+  const d = document.getElementById('ver-btns');
+  d.innerHTML = '';
+  for (let i = 1; i <= 5; i++) {
+    const b = document.createElement('button');
+    b.className = 'ver-btn' + (examVersion === i ? ' active' : '');
+    b.textContent = 'Version ' + i;
+    b.onclick = () => { examVersion = i; buildVerBtns(); document.getElementById('start-btn').disabled = false; };
+    d.appendChild(b);
+  }
+}
+
+function selectSection(idx) {
+  selectedSection = idx;
+  document.querySelectorAll('.sec-btn').forEach((b, i) => b.classList.toggle('active', i === idx));
+  document.getElementById('start-btn').disabled = false;
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function startSession() {
+  if (mode === 'quiz') {
+    let pool = shuffle([...QS[selectedSection]]);
+    questions = pool.slice(0, 30);
+    timeLeft = 0;
+  } else {
+    let seed = (examVersion - 1) * 137 + Date.now();
+    let all = [];
+    [0, 1, 2].forEach(s => {
+      let pool = [...QS[s]];
+      // deterministic per version
+      for (let i = pool.length - 1; i > 0; i--) {
+        seed = (seed * 1664525 + 1013904223) & 0xffffffff;
+        const j = Math.abs(seed) % (i + 1);
+        [pool[i], pool[j]] = [pool[j], pool[i]];
+      }
+      all = all.concat(pool);
+    });
+    // shuffle all together
+    for (let i = all.length - 1; i > 0; i--) {
+      seed = (seed * 1664525 + 1013904223) & 0xffffffff;
+      const j = Math.abs(seed) % (i + 1);
+      [all[i], all[j]] = [all[j], all[i]];
+    }
+    questions = all.slice(0, 310);
+    timeLeft = 6.5 * 60 * 60; // ~6.5 hours in seconds (sum of section times)
+  }
+  answers = new Array(questions.length).fill(null);
+  current = 0;
+  showQuizScreen();
+}
+
+function showQuizScreen() {
+  document.getElementById('home-screen').classList.remove('active');
+  document.getElementById('results-screen').classList.remove('active');
+  document.getElementById('quiz-screen').classList.add('active');
+  const title = mode === 'quiz' ? SECTIONS[selectedSection] + ' Quiz' : 'CFE Full Exam — Version ' + examVersion;
+  document.getElementById('qh-title').textContent = title;
+  if (mode === 'exam' && timeLeft > 0) {
+    startTimer();
+  } else {
+    document.getElementById('timer-box').textContent = '—';
+  }
+  renderQ();
+}
+
+function startTimer() {
+  clearInterval(timerInterval);
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    updateTimer();
+    if (timeLeft <= 0) { clearInterval(timerInterval); finishSession(); }
+  }, 1000);
+  updateTimer();
+}
+
+function updateTimer() {
+  const h = Math.floor(timeLeft / 3600);
+  const m = Math.floor((timeLeft % 3600) / 60);
+  const s = timeLeft % 60;
+  const str = h > 0 ? `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}` : `${m}:${String(s).padStart(2,'0')}`;
+  const tb = document.getElementById('timer-box');
+  tb.textContent = str;
+  tb.className = 'timer-box' + (timeLeft < 600 ? ' warn' : '');
+}
+
+function renderQ() {
+  const q = questions[current];
+  const pct = Math.round(((current + 1) / questions.length) * 100);
+  document.getElementById('prog-fill').style.width = pct + '%';
+  document.getElementById('prog-label').textContent = `${current + 1} of ${questions.length}`;
+  document.getElementById('qh-info').textContent = `${SECTIONS[getSectionIdx(current)]} | Q${current+1}`;
+  const answered = answers[current];
+  const showExp = answered !== null;
+  const sectionTag = `<span class="q-section-tag">${SECTIONS[getSectionIdx(current)]}</span>`;
+  let optHTML = '';
+  if (q.type === 'tf') {
+    const letters = ['T','F'];
+    optHTML = `<div class="tf-opts">` + q.opts.map((o,i) => {
+      let cls = 'tf-opt';
+      if (answered !== null) {
+        if (i === q.ans) cls += ' correct';
+        else if (i === answered && i !== q.ans) cls += ' wrong';
+      } else if (i === answered) cls += ' selected';
+      return `<button class="${cls}" onclick="selectAnswer(${i})" ${answered!==null?'disabled':''}>${o}</button>`;
+    }).join('') + `</div>`;
+  } else {
+    const letters = ['A','B','C','D'];
+    optHTML = `<div class="options">` + q.opts.map((o,i) => {
+      let cls = 'opt';
+      if (answered !== null) {
+        if (i === q.ans) cls += ' correct';
+        else if (i === answered && i !== q.ans) cls += ' wrong';
+      } else if (i === answered) cls += ' selected';
+      return `<button class="${cls}" onclick="selectAnswer(${i})" ${answered!==null?'disabled':''}><span class="opt-letter">${letters[i]}.</span>${o}</button>`;
+    }).join('') + `</div>`;
+  }
+  const expHTML = showExp ? `<div class="explanation"><strong>Explanation:</strong> ${q.exp}</div>` : '';
+  document.getElementById('q-area').innerHTML = `
+    <div class="q-card">
+      <div class="q-num">Question ${current+1} of ${questions.length}</div>
+      ${sectionTag}
+      <div class="q-text">${q.q}</div>
+      ${optHTML}
+      ${expHTML}
+    </div>
+  `;
+  document.getElementById('prev-btn').disabled = current === 0;
+  document.getElementById('next-btn').textContent = current === questions.length - 1 ? 'Finish ✓' : 'Next →';
+  document.getElementById('next-btn').className = current === questions.length - 1 ? 'nav-btn finish' : 'nav-btn';
+  document.getElementById('skip-btn').style.display = answers[current] === null ? 'inline-block' : 'none';
+}
+
+function getSectionIdx(qIdx) {
+  if (mode === 'quiz') return selectedSection;
+  // For exam, each question has a section tag from its source
+  // We'll look it up in QS
+  const q = questions[qIdx];
+  for (let s = 0; s < 3; s++) {
+    if (QS[s].some(x => x.q === q.q)) return s;
+  }
+  return 0;
+}
+
+function selectAnswer(idx) {
+  if (answers[current] !== null) return;
+  answers[current] = idx;
+  renderQ();
+}
+
+function prevQ() { if (current > 0) { current--; renderQ(); } }
+function nextQ() {
+  if (current === questions.length - 1) { finishSession(); return; }
+  current++;
+  renderQ();
+}
+function skipQ() { if (current < questions.length - 1) { current++; renderQ(); } }
+
+function finishSession() {
+  clearInterval(timerInterval);
+  document.getElementById('quiz-screen').classList.remove('active');
+  document.getElementById('results-screen').classList.add('active');
+  showResults();
+}
+
+function showResults() {
+  const correct = answers.filter((a, i) => a === questions[i].ans).length;
+  const answered = answers.filter(a => a !== null).length;
+  const pct = Math.round((correct / questions.length) * 100);
+  const pass = pct >= 75;
+  const container = document.getElementById('results-summary');
+  container.innerHTML = `
+    <div class="score-circle ${pass?'pass':'fail'}">
+      <div class="score-pct ${pass?'pass':'fail'}">${pct}%</div>
+      <div class="score-label">Score</div>
+    </div>
+    <div class="pass-fail ${pass?'pass':'fail'}">${pass ? '✓ PASS' : '✗ FAIL'}</div>
+    <p style="color:#666;font-size:14px;margin-bottom:16px;">Passing score: 75% | You need 75% on each section of the actual CFE exam</p>
+    <div class="stats-row">
+      <div class="stat"><div class="stat-val">${correct}</div><div class="stat-label">Correct</div></div>
+      <div class="stat"><div class="stat-val">${questions.length - correct}</div><div class="stat-label">Incorrect</div></div>
+      <div class="stat"><div class="stat-val">${questions.length - answered}</div><div class="stat-label">Skipped</div></div>
+      <div class="stat"><div class="stat-val">${questions.length}</div><div class="stat-label">Total</div></div>
+    </div>
+  `;
+  // Section breakdown
+  const bySection = [0,1,2].map(s => {
+    const relevant = questions.map((q,i)=>({q,i})).filter(({q})=>QS[s].some(x=>x.q===q.q));
+    const sec_correct = relevant.filter(({i})=>answers[i]===questions[i].ans).length;
+    return { name: SECTIONS[s], total: relevant.length, correct: sec_correct };
+  }).filter(s=>s.total>0);
+  let breakdown = '';
+  bySection.forEach(s => {
+    const p = s.total ? Math.round((s.correct/s.total)*100) : 0;
+    breakdown += `<div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid #f0f2f5;">
+      <div style="flex:1;font-size:13px;">${s.name}</div>
+      <div style="font-size:13px;font-weight:600;color:${p>=75?'#2d7a3a':'#c0392b'}">${s.correct}/${s.total} (${p}%)</div>
+    </div>`;
+  });
+  const reviewArea = document.getElementById('review-area');
+  reviewArea.innerHTML = `<div class="review-section"><h3>Section Breakdown</h3>${breakdown}</div>`;
+  // Review wrong answers
+  const wrong = questions.map((q,i)=>({q,i,a:answers[i]})).filter(({a,i})=>a!==questions[i].ans);
+  if (wrong.length) {
+    let wHTML = wrong.slice(0,20).map(({q,i,a}) => {
+      const letters = ['A','B','C','D'];
+      const yourAns = a===null?'Skipped':(q.type==='tf'?q.opts[a]:`${letters[a]}. ${q.opts[a]}`);
+      const correctAns = q.type==='tf'?q.opts[q.ans]:`${letters[q.ans]}. ${q.opts[q.ans]}`;
+      return `<div class="review-q">
+        <div class="review-q-text">${i+1}. ${q.q}</div>
+        <div class="review-answer">Your answer: <span class="wrong-ans">${yourAns}</span> | Correct: <span class="correct-ans">${correctAns}</span></div>
+      </div>`;
+    }).join('');
+    reviewArea.innerHTML += `<div class="review-section"><h3>Questions to Review (showing first 20 incorrect)</h3>${wHTML}</div>`;
+  }
+}
+
+function goHome() {
+  clearInterval(timerInterval);
+  document.getElementById('results-screen').classList.remove('active');
+  document.getElementById('home-screen').classList.add('active');
+  mode = null; selectedSection = null; examVersion = null;
+  document.getElementById('quiz-options').style.display = 'none';
+  document.getElementById('exam-options').style.display = 'none';
+  document.getElementById('card-quiz').classList.remove('selected');
+  document.getElementById('card-exam').classList.remove('selected');
+  document.getElementById('start-btn').disabled = true;
+}
+
+function retakeSession() {
+  clearInterval(timerInterval);
+  mode = lastMode;
+  document.getElementById('results-screen').classList.remove('active');
+  startSession();
+}
+</script>
+</body>
+</html>

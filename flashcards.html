@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CFE Flashcards</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f2f5; color: #1a1a2e; min-height: 100vh; }
+#app { max-width: 820px; margin: 0 auto; padding: 20px; }
+.top-bar { background: #1e2a3a; color: #fff; border-radius: 12px; padding: 16px 24px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+.top-bar h1 { font-size: 18px; font-weight: 600; }
+.sec-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+.sec-tab { background: #fff; border: 2px solid #e0e4ea; border-radius: 10px; padding: 9px 16px; cursor: pointer; font-size: 13px; font-family: inherit; font-weight: 500; color: #444; transition: all 0.15s; }
+.sec-tab:hover { border-color: #4a7ab0; color: #1a5fb4; }
+.sec-tab.active { border-color: #1a5fb4; background: #1a5fb4; color: #fff; }
+.controls { display: flex; gap: 10px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
+.ctrl-btn { background: #fff; border: 2px solid #e0e4ea; border-radius: 9px; padding: 8px 16px; cursor: pointer; font-size: 13px; font-family: inherit; font-weight: 500; color: #444; transition: all 0.15s; }
+.ctrl-btn:hover { border-color: #4a7ab0; color: #1a5fb4; }
+.ctrl-btn.active { border-color: #1a5fb4; background: #e8f0fe; color: #1a5fb4; }
+.ctrl-btn.green { border-color: #2d7a3a; color: #2d7a3a; }
+.ctrl-btn.green:hover { background: #e8f8ec; }
+.ctrl-btn.red { border-color: #c0392b; color: #c0392b; }
+.ctrl-btn.red:hover { background: #fdf0ee; }
+.prog-row { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+.prog-bar { flex: 1; height: 8px; background: #e0e4ea; border-radius: 4px; overflow: hidden; }
+.prog-fill { height: 8px; background: #1a5fb4; border-radius: 4px; transition: width 0.4s; }
+.prog-label { font-size: 13px; color: #666; white-space: nowrap; }
+.card-scene { perspective: 1400px; width: 100%; margin-bottom: 20px; }
+.card-wrap { width: 100%; min-height: 300px; position: relative; transform-style: preserve-3d; transition: transform 0.55s cubic-bezier(0.4,0,0.2,1); cursor: pointer; }
+.card-wrap.flipped { transform: rotateY(180deg); }
+.card-face { position: absolute; width: 100%; min-height: 300px; backface-visibility: hidden; border-radius: 14px; padding: 36px 40px; display: flex; flex-direction: column; justify-content: center; }
+.card-front { background: #fff; border: 2px solid #e0e4ea; box-shadow: 0 2px 16px rgba(0,0,0,0.06); }
+.card-back { background: #1e2a3a; color: #e8ecf0; border: 2px solid #2d3f52; transform: rotateY(180deg); }
+.card-tag { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: #4a7ab0; margin-bottom: 14px; }
+.card-back .card-tag { color: #7eb8f7; }
+.card-hint { font-size: 12px; color: #bbb; margin-bottom: 14px; }
+.card-text { font-size: 18px; line-height: 1.7; font-weight: 500; color: #1a1a2e; }
+.card-back .card-text { font-size: 16px; font-weight: 400; color: #e8ecf0; line-height: 1.75; }
+.card-number { font-size: 12px; color: #999; margin-top: 20px; align-self: flex-end; }
+.card-back .card-number { color: #5a7090; }
+.nav-row { display: flex; justify-content: center; align-items: center; gap: 16px; margin-bottom: 16px; }
+.nav-btn { background: #1e2a3a; color: #fff; border: none; border-radius: 10px; padding: 12px 28px; font-size: 15px; font-family: inherit; cursor: pointer; font-weight: 500; transition: background 0.15s; }
+.nav-btn:hover { background: #2d3f52; }
+.nav-btn:disabled { background: #b0b8c8; cursor: not-allowed; }
+.flip-btn { background: #1a5fb4; color: #fff; border: none; border-radius: 10px; padding: 12px 28px; font-size: 15px; font-family: inherit; cursor: pointer; font-weight: 500; }
+.flip-btn:hover { background: #1447a0; }
+.rating-row { display: flex; justify-content: center; gap: 12px; margin-bottom: 20px; }
+.rate-btn { border: none; border-radius: 9px; padding: 10px 22px; font-size: 14px; font-family: inherit; cursor: pointer; font-weight: 500; transition: all 0.15s; }
+.rate-btn.again { background: #fdf0ee; color: #c0392b; border: 2px solid #e07070; }
+.rate-btn.again:hover { background: #c0392b; color: #fff; }
+.rate-btn.hard { background: #fff8e1; color: #a06800; border: 2px solid #f0c040; }
+.rate-btn.hard:hover { background: #f0a500; color: #fff; }
+.rate-btn.good { background: #e8f8ec; color: #2d7a3a; border: 2px solid #5ab06a; }
+.rate-btn.good:hover { background: #2d7a3a; color: #fff; }
+.rate-btn.easy { background: #e8f0fe; color: #1a5fb4; border: 2px solid #6090d8; }
+.rate-btn.easy:hover { background: #1a5fb4; color: #fff; }
+.stats-bar { display: flex; gap: 12px; flex-wrap: wrap; background: #fff; border-radius: 10px; padding: 12px 18px; margin-bottom: 20px; border: 1px solid #e0e4ea; }
+.stat-item { text-align: center; flex: 1; min-width: 60px; }
+.stat-val { font-size: 20px; font-weight: 700; color: #1e2a3a; }
+.stat-val.green { color: #2d7a3a; }
+.stat-val.red { color: #c0392b; }
+.stat-val.amber { color: #a06800; }
+.stat-label { font-size: 11px; color: #888; margin-top: 2px; }
+.filter-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 16px; }
+.filter-label { font-size: 13px; color: #666; }
+.filter-btn { background: #fff; border: 2px solid #e0e4ea; border-radius: 8px; padding: 5px 12px; cursor: pointer; font-size: 12px; font-family: inherit; }
+.filter-btn.active { border-color: #1a5fb4; background: #e8f0fe; color: #1a5fb4; }
+.done-screen { background: #fff; border-radius: 14px; padding: 40px; text-align: center; }
+.done-icon { font-size: 52px; margin-bottom: 14px; }
+.done-title { font-size: 22px; font-weight: 700; color: #1e2a3a; margin-bottom: 8px; }
+.done-sub { font-size: 15px; color: #666; margin-bottom: 24px; }
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="top-bar">
+    <h1>CFE Flashcards</h1>
+    <span id="deck-size" style="font-size:13px;color:#8ca0b8;"></span>
+  </div>
+  <div class="sec-row" id="sec-tabs"></div>
+  <div class="stats-bar">
+    <div class="stat-item"><div class="stat-val" id="st-total">0</div><div class="stat-label">Total</div></div>
+    <div class="stat-item"><div class="stat-val green" id="st-easy">0</div><div class="stat-label">Easy</div></div>
+    <div class="stat-item"><div class="stat-val green" id="st-good">0</div><div class="stat-label">Good</div></div>
+    <div class="stat-item"><div class="stat-val amber" id="st-hard">0</div><div class="stat-label">Hard</div></div>
+    <div class="stat-item"><div class="stat-val red" id="st-again">0</div><div class="stat-label">Again</div></div>
+    <div class="stat-item"><div class="stat-val" id="st-unseen">0</div><div class="stat-label">Unseen</div></div>
+  </div>
+  <div class="filter-row">
+    <span class="filter-label">Show:</span>
+    <button class="filter-btn active" id="f-all" onclick="setFilter('all')">All</button>
+    <button class="filter-btn" id="f-again" onclick="setFilter('again')">Again only</button>
+    <button class="filter-btn" id="f-hard" onclick="setFilter('hard')">Hard only</button>
+    <button class="filter-btn" id="f-unseen" onclick="setFilter('unseen')">Unseen only</button>
+  </div>
+  <div class="controls">
+    <button class="ctrl-btn" onclick="reshuffleCards()">🔀 Reshuffle</button>
+    <button class="ctrl-btn" onclick="restartDeck()">↺ Restart</button>
+    <button class="ctrl-btn" id="auto-btn" onclick="toggleAuto()">▶ Auto-flip (5s)</button>
+  </div>
+  <div class="prog-row">
+    <div class="prog-bar"><div class="prog-fill" id="prog-fill"></div></div>
+    <div class="prog-label" id="prog-label">—</div>
+  </div>
+  <div class="card-scene" id="card-scene">
+    <div class="card-wrap" id="card-wrap" onclick="flipCard()">
+      <div class="card-face card-front" id="card-front"></div>
+      <div class="card-face card-back" id="card-back"></div>
+    </div>
+  </div>
+  <div class="nav-row">
+    <button class="nav-btn" id="prev-btn" onclick="prevCard()">← Prev</button>
+    <button class="flip-btn" onclick="flipCard()">Flip Card</button>
+    <button class="nav-btn" id="next-btn" onclick="nextCard()">Next →</button>
+  </div>
+  <div class="rating-row" id="rating-row">
+    <button class="rate-btn again" onclick="rateCard('again')">✗ Again</button>
+    <button class="rate-btn hard" onclick="rateCard('hard')">⟳ Hard</button>
+    <button class="rate-btn good" onclick="rateCard('good')">✓ Good</button>
+    <button class="rate-btn easy" onclick="rateCard('easy')">★ Easy</button>
+  </div>
+  <div id="done-screen" class="done-screen" style="display:none">
+    <div class="done-icon">🎉</div>
+    <div class="done-title">Deck Complete!</div>
+    <div class="done-sub" id="done-sub"></div>
+    <button class="nav-btn" onclick="restartDeck()" style="margin:0 auto;display:block;">↺ Restart Deck</button>
+  </div>
+</div>
+
+<script>
+const ALL_CARDS = {
+0: [ // Fraud Schemes & Financial Crimes - 110+ cards
+{front:"What is skimming?",back:"Theft of cash BEFORE it is recorded in accounting records. It is 'off-the-books' theft — the most difficult cash theft to detect because no book discrepancy is created. Common examples: not ringing up a sale, pocketing a customer payment without recording it."},
+{front:"What is cash larceny?",back:"Theft of cash AFTER it has been recorded in the accounting records. Unlike skimming, larceny creates a detectable discrepancy between recorded cash and actual cash on hand. Concealment methods include journal entry manipulation and lapping."},
+{front:"Explain the lapping scheme.",back:"A concealment technique where an employee steals a customer's payment, then covers it by applying a later customer's payment to the first account. This chain continues indefinitely. Detected by reconciling payment dates on deposits against credit dates on individual customer accounts."},
+{front:"What is a ghost employee scheme?",back:"A payroll fraud where a fictitious or already-terminated employee is kept on the payroll, and their paychecks are diverted to the fraudster. Detected by reconciling HR records to payroll, performing physical headcounts, and reviewing terminated employee payroll activity."},
+{front:"What is a shell company scheme?",back:"A fraudster creates a fictitious vendor company, submits invoices for goods/services never delivered, and the organization pays the shell — which the fraudster controls. Red flags: vendor with only a P.O. Box, no employees, address matching an employee's address."},
+{front:"Define check tampering.",back:"The physical alteration or forgery of company checks to misappropriate funds. Methods include forging authorized signatures, altering payee names on signed checks, or creating counterfeit checks. Controls: positive pay, dual signatures, review of canceled check images."},
+{front:"What is the fundamental accounting equation?",back:"Assets = Liabilities + Equity. This equation must always remain balanced. Fraud typically manipulates one or more components — overstating assets, understating liabilities, or inflating equity through fictitious revenues."},
+{front:"What does the income statement show?",back:"Revenues, expenses, and net income or loss over a period of time. It is one of the most commonly manipulated statements — fraudsters overstate revenue (fictitious sales, premature recognition) or understate expenses (capitalizing costs that should be expensed)."},
+{front:"What does the balance sheet show?",back:"A snapshot of a company's financial position at a specific point in time — listing all assets, liabilities, and equity. Common manipulations: fictitious receivables, overstated inventory, understated liabilities, inflated asset values."},
+{front:"Why is the cash flow statement difficult to manipulate?",back:"Because cash flows require actual movement of funds — they can't easily be created through accrual-based journal entries. A persistent divergence between high net income and low operating cash flows is a major red flag for financial statement fraud."},
+{front:"What is segregation of duties?",back:"An internal control requiring that no single employee controls all phases of a transaction: authorization, recording, and custody of assets. Without segregation, an employee can both commit and conceal fraud. Critical for reducing opportunity."},
+{front:"What is a fictitious revenue scheme?",back:"Recording sales for transactions that never occurred — creating fake invoices, fake customers, or fake shipments. Detection: confirm revenues with customers, trace sales to shipping documents, analyze unusual spikes in revenue near period end."},
+{front:"What is channel stuffing?",back:"Shipping excess product to distributors near period end with undisclosed return rights, inflating apparent sales. The revenue is prematurely recognized. A red flag: unusually high receivables at period end that reverse in the next period."},
+{front:"What was the WorldCom fraud?",back:"WorldCom fraudulently capitalized approximately $3.8 billion in operating expenses (primarily telecommunications line costs) as capital expenditures. This reduced current period expenses and inflated assets and reported income. It led to the largest bankruptcy at the time (2002)."},
+{front:"What is the Beneish M-Score?",back:"A mathematical model using 8 financial ratios to detect potential earnings manipulation. An M-Score above −1.78 suggests a higher probability of manipulation. It is a screening tool — not proof of fraud — that signals accounts needing further scrutiny."},
+{front:"What is a vendor kickback scheme?",back:"A vendor pays (or gives value to) an employee who influences purchasing decisions, in exchange for being awarded contracts, higher prices, or overlooked quality issues. Represents a form of bribery and corruption in the supply chain."},
+{front:"What is a conflict of interest in fraud?",back:"An employee has an undisclosed personal financial or personal interest in a transaction that may bias their professional judgment to the employer's detriment. Even if no direct theft occurs, the undisclosed nature violates fiduciary duty."},
+{front:"What does the FCPA prohibit?",back:"The Foreign Corrupt Practices Act prohibits U.S. persons/entities (and foreign issuers listed in the U.S.) from bribing foreign government officials to obtain or retain business. It also requires accurate books/records and adequate internal controls."},
+{front:"What is Business Email Compromise (BEC)?",back:"A fraud where attackers compromise legitimate email accounts or impersonate executives to pressure employees into wiring funds or changing payment information. Often involves urgency and requests for confidentiality to bypass normal approval processes."},
+{front:"What is identity theft in a corporate context?",back:"Stealing employee or customer PII (Social Security numbers, account credentials, etc.) to access accounts, open credit lines, file fraudulent tax returns, or impersonate individuals. Data breaches are a primary source of stolen credentials."},
+{front:"What is expense reimbursement fraud?",back:"Submitting personal expenses as business expenses, inflating or duplicating legitimate expenses, or fabricating receipts. Detection: review original receipts, require supervisor approval, compare to peer expense levels, scrutinize unusual categories."},
+{front:"What is financial statement fraud?",back:"Intentional misrepresentation of an organization's financial condition through falsification of amounts or disclosures. Typically benefits the organization or its executives. Least common fraud type but involves the largest median losses."},
+{front:"How is inventory fraud committed?",back:"Two directions: (1) Overstate inventory to inflate assets and reduce COGS (inflating profits); (2) Understate inventory to reduce taxable income. Methods: fictitious counts, improper valuation (LIFO/FIFO manipulation), fictitious purchase records."},
+{front:"What is a round-trip transaction?",back:"Two parties simultaneously pay each other to create the appearance of revenue with no real economic substance. Example: Company A 'sells' to Company B which simultaneously 'sells' back to A — both record revenue but nothing of real value was exchanged."},
+{front:"What is related-party transaction fraud?",back:"Using transactions between affiliated parties (not at arm's-length) to misrepresent financial position — moving income, expenses, assets, or liabilities improperly. Key concern: failure to disclose material related-party relationships."},
+{front:"What is an asset misappropriation scheme?",back:"The theft or misuse of an organization's resources by an employee or other trusted individual. Most common type of fraud (86%+ of cases) but typically lowest median loss. Includes cash theft, inventory theft, payroll fraud, and expense fraud."},
+{front:"What does 'double-entry bookkeeping' mean?",back:"Every transaction is recorded in at least two accounts with debits equaling credits, maintaining the balance of Assets = Liabilities + Equity. This system makes fraud detectable by creating interdependencies that are hard to manipulate unilaterally."},
+{front:"What is a billing scheme?",back:"Fraudulent manipulation of an organization's payment processes to divert funds. Types include: shell company invoices, personal purchases billed to the company, inflated invoices, and pay-and-return (overbilling with kickback) schemes."},
+{front:"What red flags indicate a possible shell vendor?",back:"P.O. Box only (no physical address), address matching an employee's address or residence, no phone number or web presence, company name similar to a legitimate vendor, sequential invoice numbers suggesting one customer, invoices lacking detail."},
+{front:"What is the accrual basis of accounting?",back:"Revenue is recognized when earned (not when cash is received) and expenses are recognized when incurred (not when paid). Accrual accounting creates more opportunities for manipulation than cash basis because it involves estimates and judgments."},
+{front:"What is COGS (Cost of Goods Sold)?",back:"The direct costs of producing goods sold. Understating COGS (by overstating ending inventory, for example) inflates gross profit. The WorldCom fraud effectively understated COGS by improperly capitalizing what should have been operating expenses."},
+{front:"Define 'conversion' in the context of fraud.",back:"The process by which the fraudster transforms stolen assets into a form they can use — typically converting stolen cash, checks, or assets into funds they can spend. Understanding conversion helps locate proceeds and identify the full scope of a scheme."},
+{front:"What is a Ponzi scheme?",back:"Returns to early investors are paid from new investors' contributions, not from actual investment returns. The scheme is unsustainable and eventually collapses. Named for Charles Ponzi; the Bernie Madoff scheme was the largest in history (~$65 billion)."},
+{front:"What is occupational fraud?",back:"The use of one's occupation for personal enrichment through the deliberate misuse or misapplication of the employing organization's resources or assets (ACFE definition). The three major categories are asset misappropriation, corruption, and financial statement fraud."},
+{front:"What is a 'true-up' entry in fraud?",back:"A fraudulent journal entry made at period end to 'true up' (balance) accounts that have been manipulated, making books appear balanced. Often involves unusual, round-number entries with vague descriptions posted just before period close."},
+{front:"How does payroll commission fraud work?",back:"An employee records fictitious sales or inflates sales figures to earn higher commission payments. Schemes may involve creating fake customer orders, recording sales that never ship, or colluding with a customer to record orders that are later reversed."},
+{front:"What is the purpose of bank reconciliation as a control?",back:"To reconcile the company's book balance of cash with the bank statement balance, identifying timing differences, errors, and fraudulent items. When the reconciler is independent of cash handling and recording, it is an effective fraud detection control."},
+{front:"What is a fictitious return scheme?",back:"An employee processes fraudulent customer returns, issuing refunds for merchandise that was never actually returned, and pockets the refund cash. Or a supervisor approves fictitious refunds, routing them to accounts they control."},
+{front:"What is positive pay?",back:"A bank service where the company provides the bank with a file of authorized checks (amount, payee, check number). The bank matches presented checks against this file and flags discrepancies for review. Highly effective against check tampering and counterfeit checks."},
+{front:"What is a 'timing' manipulation in revenue fraud?",back:"Recording revenue in an earlier period than when it was actually earned — accelerating recognition. Example: recording December 31 sales before goods ship, or recognizing a multi-year contract's full revenue upfront. Creates unsustainable reported growth."},
+{front:"What is securities fraud?",back:"Deception in connection with the purchase or sale of securities — including insider trading, market manipulation, Ponzi schemes targeting investors, and false disclosures in public company filings. Prosecuted under both the Securities Exchange Act and mail/wire fraud statutes."},
+{front:"What is money laundering?",back:"The process of making illegally obtained ('dirty') money appear legitimate ('clean'). The three stages are: placement (introducing cash into the financial system), layering (concealing the trail through complex transactions), and integration (reintroducing funds into the legitimate economy)."},
+{front:"What is the difference between a bribe and a kickback?",back:"A bribe is paid before a decision to influence it. A kickback is paid after a decision, in appreciation for it. In practice the distinction blurs, but kickbacks are most common in vendor/purchasing contexts, while bribes are more common in regulatory or government settings."},
+{front:"What is healthcare fraud?",back:"Schemes targeting healthcare programs (Medicare, Medicaid, private insurers) including: billing for services not rendered, upcoding (billing for higher-cost services than provided), unbundling (billing separately for services normally billed together), and phantom patient billing."},
+{front:"What is procurement fraud?",back:"Fraudulent manipulation of the purchasing process — may include bid rigging (competitors conspire to control bid outcomes), product substitution (delivering lower-quality goods), and kickback schemes with preferred vendors. Often involves an insider colluding with external parties."},
+{front:"What is a skimming indicator in retail?",back:"Sales that don't match expected ratios to inventory reductions, customers reporting they didn't receive receipts, refunds issued without corresponding merchandise returns, cash register totals inconsistent with POS records, missing transaction voids in sequence."},
+{front:"What is internal audit's role in fraud prevention?",back:"Internal audit provides independent assurance on the adequacy and effectiveness of internal controls, including fraud-related controls. It performs risk-based testing, follows up on control weaknesses, and reports findings to the audit committee. It is one layer of the fraud defense — not a guarantee."},
+{front:"What is the ACFE definition of fraud?",back:"Fraud is defined as any intentional or deliberate act to deprive another of property or money by guile, deception, or other unfair means. It involves the intentional misrepresentation or concealment of a material fact made to influence another to act to their own detriment."},
+{front:"What are the Fraud Triangle's three elements?",back:"1. PRESSURE — a non-shareable financial problem motivating the fraud; 2. OPPORTUNITY — the ability to commit and conceal the fraud (often via weak controls); 3. RATIONALIZATION — a justification that makes the act feel acceptable to the fraudster."},
+{front:"What is expense report fraud?",back:"Falsifying expense reimbursement requests by: submitting personal expenses as business expenses, inflating legitimate expenses, submitting duplicate receipts, or creating fictitious receipts. One of the most common forms of employee fraud due to the subjective nature of business expenses."},
+{front:"What is a journal entry fraud?",back:"Recording false or altered journal entries to manipulate financial records — increasing revenues, decreasing expenses, or moving balances between accounts. Red flags: round numbers, vague descriptions, entries by unusual personnel, and entries made near period end without supporting documentation."},
+{front:"How do fraudsters exploit accounts receivable?",back:"Methods include: skimming (stealing payments before recording), lapping (using later payments to cover earlier theft), fictitious receivables (recording revenues for transactions that didn't occur), and write-off schemes (writing off accounts to cover stolen payments)."},
+{front:"What is a 'false invoice' scheme?",back:"Submitting invoices from fictitious vendors (shell companies) or inflating invoices from real vendors for goods/services never delivered or at prices above market. The fraudster controls the receiving entity and pockets the payment."},
+{front:"How does collusion affect fraud risk?",back:"Collusion — two or more employees conspiring — defeats segregation of duties controls by allowing each to cover for the other. Collusive frauds are significantly harder to detect and cause higher median losses. Management collusion with external parties is particularly dangerous."},
+{front:"What is an 'off-balance-sheet' fraud?",back:"Hiding liabilities, obligations, or transactions by structuring them so they don't appear on the balance sheet. Enron extensively used special purpose entities (SPEs) to keep debt off-balance-sheet while retaining the associated risks — a massive accounting fraud."},
+{front:"What is warranty fraud?",back:"Submitting false warranty claims for repairs or replacements of products not actually serviced or returned. Can be perpetrated by service technicians (billing for unperformed work), distributors (claiming warranty reimbursement for non-defective returned items), or customers."},
+{front:"What is 'tunneling' in corporate fraud?",back:"The transfer of assets or profits from a company to its controlling shareholders or insiders at the expense of minority shareholders. Common in companies with concentrated ownership. Examples: selling company assets to related parties at below-market prices."},
+{front:"What is a 'cutoff' fraud in financial statements?",back:"Recording transactions in the wrong period — typically recording sales prematurely (before period end when they should be in the next period) or delaying expense recognition. Sales cutoff fraud inflates revenue in the current period at the expense of accuracy."},
+{front:"What is the difference between error and fraud?",back:"Error is an unintentional misstatement; fraud is intentional. The key distinguishing element of fraud is intent to deceive. Both can result in misstated financial statements, but only fraud involves purposeful manipulation. Intent is often the critical legal question."},
+{front:"What is a 'no-show' employee scheme?",back:"An employee is on the payroll but performs little or no work — they 'show up' only in name. May involve a supervisor's friend/family member who is paid but doesn't actually work. Detected through supervisor interviews, timekeeping analysis, and productive output review."},
+{front:"What is contract fraud?",back:"Fraud in the contracting process — includes bid rigging (competitors fix prices), bid rotation (taking turns winning), bid suppression (competitors refrain from bidding), and subcontractor pass-through schemes (billing for subcontractor work while providing no added value)."},
+{front:"What is a 'sweetheart deal'?",back:"A business transaction negotiated between parties with a conflicting interest — one party benefits excessively at the expense of the organization. Common in procurement: a purchasing manager gives a preferred vendor artificially favorable contract terms in exchange for personal benefits."},
+{front:"What is tax fraud?",back:"Intentional misrepresentation on tax returns to reduce tax liability — including underreporting income, inflating deductions, claiming false credits, or hiding assets in offshore accounts. Distinguished from tax avoidance (legal) and tax evasion (criminal)."},
+{front:"What is insurance fraud?",back:"Intentional deception to obtain unauthorized insurance payments — includes arson (burning insured property), staged accidents, inflated claims, and submitting claims for losses that never occurred. Can be committed by policyholders or by insiders at insurance companies."},
+{front:"What is the role of the external auditor in fraud detection?",back:"External auditors must plan audits to detect material misstatements due to fraud (AU-C 240). They assess fraud risks, perform fraud risk-related procedures, and test journal entries. However, auditors are not the primary fraud prevention mechanism — they provide reasonable, not absolute, assurance."},
+{front:"What are common inventory fraud indicators?",back:"Inventory levels inconsistent with sales volume, high write-offs or obsolescence charges, persistent inventory shrinkage, variance between physical counts and book records, unusually low COGS relative to revenue, and purchasing from related parties at above-market prices."},
+{front:"What is 'earnings management'?",back:"Using accounting judgments and estimates to present financial results favorably. At its legitimate extreme, it involves aggressive but permissible choices; at its fraudulent extreme, it crosses into intentional misrepresentation. The line between earnings management and fraud is often a matter of intent."},
+{front:"What is an 'accounts payable kiting' scheme?",back:"Exploiting the float between when a payment is initiated and when it clears the bank — writing checks on insufficient funds and covering with incoming funds to maintain an artificially inflated cash balance. Similar to bank kiting but in the accounts payable context."},
+{front:"Define 'pilferage'.",back:"Petty theft of small amounts of cash, inventory, or supplies by employees over time. While individual instances are small, the cumulative impact can be significant. Difficult to detect through accounting controls alone; physical security and inventory management are the primary responses."},
+{front:"What is a 'diversion' scheme in purchasing?",back:"Diverting legitimately ordered goods (meant for the organization) to the personal use of an employee or to external buyers for the employee's profit. May involve falsifying receiving records to show items were received when they were actually diverted elsewhere."},
+{front:"What is 'window dressing' in financial reporting?",back:"Temporarily improving financial metrics at period end to present a more favorable picture to investors — for example, accelerating collections, delaying payments, or using repurchase agreements that appear as cash. Reversals in the next period may reveal the manipulation."},
+{front:"What is a 'burn rate' manipulation?",back:"For startups and growth companies, fraudulently reporting lower cash usage (burn rate) to investors than actually occurring, making the company appear to have more runway. This may involve withholding cash flow data, manipulating cash balances, or using related-party transactions to defer expenses."},
+{front:"What is the ACFE Occupational Fraud Report?",back:"Published every two years, it is the largest study of occupational fraud globally — the 'Report to the Nations.' It analyzes thousands of fraud cases, reporting on frequency, median losses, detection methods, perpetrator profiles, and organizational characteristics related to fraud risk."},
+{front:"What is 'bid rigging'?",back:"An anti-competitive and fraudulent practice where competitors collude to control bid outcomes on contracts. Schemes include bid suppression (some competitors refrain from bidding), bid rotation (taking turns as the low bidder), and complementary bidding (submitting intentionally uncompetitive bids)."},
+{front:"What is the auditor's responsibility under SAS 99 / AU-C 240?",back:"Requires auditors to specifically assess the risk of material misstatement due to fraud in every audit — interviewing management about fraud risks, performing unpredictable procedures, testing journal entries, and evaluating accounting estimates for management bias."},
+{front:"What is 'defalcation'?",back:"Misappropriation of funds by a person entrusted with them. Often used to describe embezzlement by fiduciaries — trustees, officers, employees with custody of organizational assets. The term emphasizes the breach of trust element of the theft."},
+{front:"What is an 'analytical procedure' in fraud detection?",back:"Comparing financial data to expectations based on historical trends, industry benchmarks, or economic conditions. Significant unexplained deviations are red flags. Examples: gross margin trending divergent from industry peers, revenue growing while headcount declines."},
+{front:"What is corporate espionage as a fraud type?",back:"The unauthorized acquisition of trade secrets, proprietary information, or intellectual property — either for the perpetrator's own use or to sell to competitors. May involve insider employees, hired spies, or cyber intrusions. Constitutes theft of intellectual property."},
+{front:"What is 'teeming and lading'?",back:"British term for lapping — an employee steals incoming cash/checks and covers by applying subsequent receipts to the stolen account. Each new receipt temporarily covers the prior theft, requiring continuous incoming payments to sustain the concealment."},
+{front:"What are common indicators of payroll fraud?",back:"Employees with no deductions (indicating they may be fictitious), employees with duplicate Social Security numbers or addresses, payroll costs inconsistent with headcount, terminated employees with post-termination payments, and commission payments without corresponding sales records."},
+{front:"What is an 'overstatement of assets' scheme?",back:"Recording assets at inflated values — overstating accounts receivable (fictitious customers), inventory (false counts or valuations), or fixed assets (inflating appraisals or recording assets that don't exist). Increases reported equity and appears to improve financial health."},
+{front:"What is 'management override' and why is it a key fraud risk?",back:"When senior executives use their authority to circumvent controls — approving unusual transactions, overriding system limits, or pressuring staff to bypass procedures. Management override defeats even strong controls and is cited as a primary concern in the audit standards' fraud risk assessment."},
+{front:"What is a 'side agreement'?",back:"An undisclosed agreement alongside a formal contract that changes the economic terms — for example, a secret right of return that makes a 'sale' really a consignment. Side agreements undermine the integrity of financial reporting by hiding the true economics of transactions."},
+{front:"What is 'credit card fraud' in an occupational context?",back:"Using a company credit card for personal purchases, submitting personal credit card charges for reimbursement as business expenses, or obtaining a company credit card in a coworker's name. Detected through review of statements, comparison to supporting documentation, and credit card reconciliations."},
+{front:"What is a 'duplicate payment' scheme?",back:"Submitting the same invoice twice (or making slight modifications — different invoice numbers, slightly different amounts) to obtain two payments. May involve collusion with a vendor or be perpetrated entirely by an internal employee. Detected through duplicate payment analysis of AP records."},
+{front:"What is the significance of the COSO framework for fraud prevention?",back:"COSO's Internal Control — Integrated Framework is the most widely used framework for designing and evaluating internal controls. Its five components (Control Environment, Risk Assessment, Control Activities, Information & Communication, Monitoring) provide a comprehensive structure for building anti-fraud controls."},
+{front:"What is 'construction fraud'?",back:"Fraud in construction projects — overbilling for materials (substituting cheaper materials while billing for specified ones), charging for non-existent work, bid rigging among contractors, kickbacks from subcontractors, and falsifying project completion records to release payment."},
+{front:"What is an 'embezzlement'?",back:"The fraudulent misappropriation of property lawfully entrusted to someone — the fraudster had lawful possession and then converted the asset for personal use. Key distinction from theft: the embezzler had legitimate initial access. Most occupational fraud cases legally qualify as embezzlement."},
+{front:"What is 'subscription fraud'?",back:"Using another person's identity or payment information to subscribe to services, or creating fictitious accounts to abuse free trials, promotional credits, or referral bonuses. Common in digital/SaaS businesses where account creation is easy and verification is limited."},
+],
+1: [ // Fraud Investigations & Legal Issues - 110+ cards
+{front:"What is the 'predicate' requirement for a fraud examination?",back:"A reasonable basis — specific allegation, documented anomaly, whistleblower tip, or pattern of facts — for believing fraud may have occurred. Without adequate predicate, a fraud examination should not be commenced, as unfounded investigations create legal and ethical risks."},
+{front:"What is the chain of custody?",back:"Chronological documentation showing the seizure, custody, control, transfer, analysis, and disposition of evidence. A proper chain of custody ensures evidence integrity and admissibility by documenting every person who handled each piece of evidence."},
+{front:"What is the best evidence rule?",back:"A legal rule requiring original documents when document contents are at issue. Under Federal Rules of Evidence, duplicates (photocopies, digital copies) are generally admissible unless authenticity is genuinely disputed or it would be unfair to admit the duplicate."},
+{front:"What is the hearsay rule?",back:"Hearsay — an out-of-court statement offered to prove the truth of the matter asserted — is generally inadmissible. However, FRE Article VIII contains over 30 exceptions, including business records (803(6)), excited utterances (803(2)), admissions by party-opponents (801(d)(2)), and others."},
+{front:"What is the business records exception to hearsay?",back:"Under FRE 803(6), records of a regularly conducted activity are admissible if: kept in the regular course of business, it was the regular practice to make the record, and the record was made at or near the time of the event. This exception is critical for admitting financial and business records."},
+{front:"What is the attorney-client privilege?",back:"Protects confidential communications between an attorney and client made for the purpose of seeking or providing legal advice. The privilege belongs to the client (who can waive it), protects only legal advice (not business advice), and is waived if the communication is disclosed to third parties."},
+{front:"What is the work product doctrine?",back:"Protects materials prepared by or for an attorney in anticipation of litigation — including investigative reports, interview notes, and analysis. More qualified than attorney-client privilege (can sometimes be overcome by showing substantial need), but broader in scope (protects non-attorney work)."},
+{front:"What is the exclusionary rule?",back:"Evidence obtained by government agents in violation of the Fourth Amendment (unreasonable search/seizure), Fifth Amendment (self-incrimination), or Sixth Amendment (right to counsel) is generally inadmissible in criminal proceedings. Does not apply to private-party searches."},
+{front:"What rights does Miranda v. Arizona protect?",back:"For custodial interrogations by law enforcement, suspects must be advised: right to remain silent, anything said can be used in court, right to an attorney, and right to appointed counsel if they can't afford one. Private-sector fraud examiners are not required to give Miranda warnings."},
+{front:"What is the Fourth Amendment?",back:"Protects against unreasonable government searches and seizures. Evidence obtained without a valid warrant (absent applicable exceptions) is subject to the exclusionary rule. Applies to government actors, not private investigators or employers in their workplaces."},
+{front:"What is the Fifth Amendment?",back:"Protects against compelled self-incrimination in criminal proceedings (right to 'take the Fifth'). Applies to natural persons, not corporations. In private-sector investigations, employees can be required to answer or face employment consequences — but their answers may not be used criminally."},
+{front:"What is the Sarbanes-Oxley Act (SOX)?",back:"Enacted in 2002 after Enron/WorldCom. Key provisions: Section 302 (CEO/CFO certification), Section 401 (off-balance-sheet disclosures), Section 404 (internal control assessment), Section 806 (employee whistleblower protection), Section 1102 (obstruction of justice), Section 1107 (retaliation against whistleblowers)."},
+{front:"What is mail fraud (18 U.S.C. § 1341)?",back:"A federal crime prohibiting the use of the U.S. mail system in furtherance of a scheme to defraud. Very broad — covers virtually any fraudulent scheme that uses mail in any way. Up to 20 years imprisonment per count (30 years if involving a financial institution)."},
+{front:"What is wire fraud (18 U.S.C. § 1343)?",back:"Identical to mail fraud but applies to electronic communications — telephone, fax, email, and internet. Because nearly all modern fraud involves electronic communications, wire fraud applies to an enormous range of fraudulent conduct. Same penalties as mail fraud."},
+{front:"What is RICO?",back:"Racketeer Influenced and Corrupt Organizations Act. Allows prosecution of enterprises through which fraud is conducted by requiring proof of a 'pattern of racketeering activity' (2+ predicate acts within 10 years). Provides for criminal and civil remedies including treble damages."},
+{front:"What is the Computer Fraud and Abuse Act (CFAA)?",back:"Primary federal statute addressing computer-related crime — prohibits unauthorized access to computers, theft of data, computer fraud, and damage to computer systems. Important for cyberfraud cases and when investigating digital evidence involving computer systems."},
+{front:"What is a Suspicious Activity Report (SAR)?",back:"Filed by financial institutions with FinCEN (Financial Crimes Enforcement Network) when they detect transactions that may involve money laundering, terrorism financing, or other suspicious financial activity. Filing a SAR triggers AML obligations and law enforcement review."},
+{front:"What is the Bank Secrecy Act (BSA)?",back:"Requires financial institutions to assist U.S. government agencies in detecting and preventing money laundering. Key requirements: filing Currency Transaction Reports (CTRs) for transactions over $10,000, filing SARs for suspicious activity, and maintaining records of transactions."},
+{front:"What is the False Claims Act?",back:"Federal law allowing individuals (qui tam relators) to file lawsuits on behalf of the government against those who defraud government programs. Relators can receive 15-30% of any recovery. Creates powerful incentives for whistleblowers to report government fraud."},
+{front:"What is a 'qui tam' action?",back:"A lawsuit filed by a private citizen (the 'relator' or whistleblower) on behalf of the government under the False Claims Act. The government may intervene and take over prosecution, or the relator may proceed independently. Successful relators receive a percentage of the government's recovery."},
+{front:"What is 'actus reus'?",back:"The 'guilty act' — the physical element of a crime. For fraud, it typically involves the actual misrepresentation, deception, or theft. Both actus reus AND mens rea (guilty mind) must be proven beyond reasonable doubt for a criminal fraud conviction."},
+{front:"What is 'mens rea'?",back:"The 'guilty mind' — the mental element of a crime showing intent or knowledge. For fraud, prosecutors must prove the defendant acted knowingly and willfully with intent to deceive. Mistake of fact (if genuine) can negate mens rea, though professional fraudsters rarely succeed with this defense."},
+{front:"What is a 'subpoena duces tecum'?",back:"A court order requiring a person or entity to produce documents, records, or other evidence relevant to legal proceedings. Fraud investigators working with law enforcement or on civil matters often need subpoenas to compel production of bank records, email archives, and other third-party documents."},
+{front:"What is metadata in digital forensics?",back:"'Data about data' — embedded information in electronic files including: creation date and time, author/last modifier, software used, revision history, and file path. Metadata can contradict the apparent face of a document (e.g., revealing a backdated contract was created later)."},
+{front:"What is 'net worth analysis' in fraud investigation?",back:"Comparing a suspect's reported income to their actual increase in net worth (assets minus liabilities) and known expenditures. Unexplained increases in net worth suggest undisclosed income from fraud. Requires thorough investigation of all assets, liabilities, income sources, and expenditures."},
+{front:"What is the Reid Technique?",back:"An interrogation approach using behavioral analysis, strategic evidence disclosure, and psychological minimization to elicit confessions. Criticized for generating false confessions, particularly with vulnerable individuals. Modern alternatives (PEACE model, HUMINT) prioritize information-gathering over confession-seeking."},
+{front:"What is the PEACE model of interviewing?",back:"Preparation; Engage and Explain; Account (free narrative); Closure; Evaluate. A non-confrontational information-gathering approach developed by UK police. Focuses on obtaining accurate information rather than confessions, reducing false confession risk. Increasingly preferred in professional investigations."},
+{front:"What is 'cognitive interview'?",back:"A research-backed technique using memory psychology to help cooperative witnesses recall more accurate information: context reinstatement (mentally returning to the scene), free recall (uninterrupted narrative), reporting everything (even seemingly minor details), and changing perspective/order."},
+{front:"What are the stages of a fraud examination?",back:"1. Receipt of allegation/predicate; 2. Planning (objectives, scope, team); 3. Document collection and analysis; 4. Data analysis; 5. Interviews (witnesses, then suspects); 6. Reporting findings; 7. Remediation recommendations. Proceeds from least invasive to most invasive."},
+{front:"What is 'spoliation' of evidence?",back:"The destruction, alteration, concealment, or failure to preserve evidence relevant to litigation or investigation. Can result in sanctions in civil proceedings (adverse inference — the court may instruct the jury to assume the destroyed evidence was unfavorable), and may constitute obstruction of justice."},
+{front:"What is a 'litigation hold'?",back:"A directive requiring an organization to preserve all potentially relevant documents and data once litigation or investigation is reasonably anticipated. Failure to implement a litigation hold (resulting in evidence loss) can constitute spoliation and expose the organization to sanctions."},
+{front:"What is digital forensics?",back:"The identification, preservation, extraction, and analysis of digital evidence following forensically sound procedures that maintain integrity and admissibility. Includes recovery of deleted files, analysis of email archives, examination of metadata, browser history, and system logs."},
+{front:"What is 'forensic imaging'?",back:"Creating a bit-for-bit copy of a storage device (hard drive, USB drive, server) to preserve evidence in its exact state at the time of collection. The original device is not examined directly; the forensic image is used for analysis. Verifiable through hash values (MD5, SHA)."},
+{front:"What is a 'hash value' in digital forensics?",back:"A mathematical fingerprint of a file or forensic image (e.g., MD5 or SHA-256). If the hash of the copy matches the hash of the original, it proves the copy is identical. Used to verify evidence integrity and that no modification occurred during collection or analysis."},
+{front:"What is 'document authentication'?",back:"The process of verifying that a document is what it purports to be — examining physical characteristics (ink, paper, printing), internal consistency, metadata, handwriting analysis, and comparing to known genuine documents. Foundational in cases involving alleged forgeries or alterations."},
+{front:"What is statement analysis?",back:"Examining the language of written or verbal statements for deception indicators: passive voice (distancing), changes in pronoun usage, gaps in the narrative, inclusion of irrelevant information, disproportionate detail in non-critical areas, and vagueness about key events."},
+{front:"What is 'asset tracing'?",back:"The process of identifying, locating, and documenting the movement of fraud proceeds — following the money from the point of theft through conversion and any subsequent transfers, often through multiple accounts, shell companies, or jurisdictions, to identify assets available for recovery."},
+{front:"What is the 'fruit of the poisonous tree' doctrine?",back:"An extension of the exclusionary rule providing that not only is illegally obtained evidence inadmissible, but so is any evidence derived from it. If an illegal search finds a ledger leading to a bank account, both the ledger and bank records may be excluded in criminal proceedings."},
+{front:"What is 'documentary evidence'?",back:"Written, printed, or electronic records that support factual assertions — contracts, invoices, emails, financial statements, bank records, and meeting minutes. Generally considered the most reliable form of evidence in fraud cases because it was created contemporaneously with events."},
+{front:"What is a 'forensic accountant'?",back:"An accountant who applies accounting and investigative skills to legal matters — including fraud investigations, economic damages calculations, business valuations, and litigation support. They may serve as expert witnesses, presenting findings to courts or arbitrators."},
+{front:"What is 'due diligence' in fraud prevention?",back:"Thoroughly investigating a person, transaction, or entity before entering a relationship or completing a transaction. In fraud prevention: pre-employment background checks, vendor verification, M&A due diligence, and financial institution KYC (Know Your Customer) processes."},
+{front:"What is a Garrity warning?",back:"When government employees are compelled to participate in an employment-related investigation under threat of job loss, any statements obtained are 'Garrity protected' — they cannot be used against the employee in a criminal prosecution. Important when law enforcement and internal investigations overlap."},
+{front:"What is 'circumstantial evidence'?",back:"Evidence that does not directly prove a fact but allows an inference to that fact. For example, a fraudster's sudden purchase of luxury items after approving inflated vendor invoices is circumstantial evidence. Fraud cases are often built substantially on circumstantial evidence."},
+{front:"What are 'data analytics' in fraud investigation?",back:"Using technology to analyze large transaction populations for anomalies, patterns, and outliers indicating potential fraud. Tools include Benford's Law analysis, duplicate payment detection, statistical sampling, and visualization. Far more effective than manual testing for large datasets."},
+{front:"What is Benford's Law?",back:"An observation that in naturally occurring numerical data, leading digits follow a specific logarithmic distribution (1 appears ~30% of the time, 2 ~17.6%, etc.). Fraudsters tend to create numbers that don't follow this distribution, making Benford's Law analysis a useful fraud screening tool."},
+{front:"What is an 'expert witness'?",back:"A person with specialized knowledge, skill, experience, training, or education who may testify in court to provide opinions based on that expertise (under FRE 702). Fraud examiners and forensic accountants frequently serve as experts in fraud litigation, explaining complex financial transactions to juries."},
+{front:"What are the ethical obligations of a CFE during an investigation?",back:"Maintain objectivity (follow evidence wherever it leads), honesty (don't misrepresent findings), confidentiality (protect investigation information), competence (don't take on engagements beyond your skills), and avoid conflicts of interest. Report findings to the engaging party without shading conclusions."},
+{front:"What is 'physical evidence'?",back:"Tangible items that can be presented in court — original documents, computer equipment, physical assets, or any object relevant to the investigation. Must be properly collected, marked, packaged, and stored to maintain chain of custody and preserve integrity for court proceedings."},
+{front:"What is the 'public records' doctrine?",back:"Government records are generally open to the public (under FOIA and state equivalents) and do not require subpoenas to obtain. Useful fraud investigation sources: property records, UCC filings, corporate registrations, court records, tax liens, judgment databases, and SEC EDGAR filings."},
+{front:"What is 'proffer agreement'?",back:"An agreement between a prosecutor and a potential defendant/witness where the individual provides information to prosecutors without the information being used directly against them in criminal proceedings. Used to obtain cooperation and gather evidence against higher-value targets."},
+{front:"What is the Dodd-Frank Act's whistleblower program?",back:"Establishes an SEC whistleblower program that awards 10-30% of sanctions over $1 million to individuals who voluntarily provide original information about securities law violations. Also extends whistleblower protections for employees of publicly traded companies and their subsidiaries."},
+{front:"What is 'civil discovery'?",back:"The pre-trial process in civil litigation where parties exchange information and evidence. Includes interrogatories (written questions), depositions (oral testimony under oath), requests for production (documents), and requests for admissions. Fraud examiners may be deposed or assist in managing document production."},
+{front:"What is 'spoliation inference'?",back:"When a party destroys evidence relevant to litigation, courts may instruct juries to infer the destroyed evidence was unfavorable to the party who destroyed it. This sanction incentivizes evidence preservation and can significantly damage the credibility of a party that allows evidence destruction."},
+{front:"What is 'search incident to arrest'?",back:"A lawful warrantless search of a person and areas within their immediate reach at the time of arrest. One of the most important exceptions to the Fourth Amendment warrant requirement. Evidence found in a lawful search incident to arrest is admissible."},
+{front:"What is a 'sting operation'?",back:"An undercover operation where law enforcement officers or their agents pose as criminals or corrupt actors to catch perpetrators in the act. Raises entrapment issues if officers induce a person to commit a crime they otherwise would not have committed. Requires careful legal oversight."},
+{front:"What is 'entrapment'?",back:"A defense available when law enforcement (not private citizens) induces a person who otherwise would not have done so to commit a crime. Two tests: (1) subjective — whether the defendant had a predisposition to commit the crime; (2) objective — whether the government conduct would have induced a reasonable person."},
+{front:"What is 'money laundering' (legal definition)?",back:"Under 18 U.S.C. § 1956 and § 1957, engaging in financial transactions with the proceeds of specific unlawful activities (specified unlawful activities / SUAs) — with knowledge that the funds are criminally derived — constitutes money laundering. Penalties up to 20 years imprisonment."},
+{front:"What are 'predicate offenses' in RICO?",back:"The underlying crimes that form the 'pattern of racketeering activity' required for RICO prosecution. They include mail/wire fraud, bank fraud, bribery, money laundering, drug trafficking, and many others. At least two predicate acts within 10 years (related to the enterprise's conduct) are required."},
+{front:"What is 'obstruction of justice' (18 U.S.C. § 1503)?",back:"Corruptly attempting to influence, obstruct, or impede the due administration of justice — including destroying evidence, bribing witnesses, or making false statements to investigators. SOX enhanced penalties for securities-related obstruction. A common additional charge in fraud cases."},
+{front:"What is 'insider trading'?",back:"Trading in securities based on material, nonpublic information in breach of a duty of trust or confidence. Under SEC Rule 10b-5, it is illegal for corporate insiders (and tippees) to trade on material nonpublic information. Penalties include disgorgement, civil penalties, and criminal prosecution."},
+{front:"What is an 'affirmative defense'?",back:"A defense that admits the basic facts alleged but provides additional facts that justify or excuse the conduct — such as entrapment, duress, statute of limitations, or good faith reliance on professional advice. The defendant bears the burden of proving an affirmative defense."},
+{front:"What is the 'Upjohn warning' (corporate Miranda)?",back:"When corporate counsel interviews an employee in connection with an internal investigation, counsel must advise the employee that: counsel represents the company, not the employee; the communication is privileged to the company; and the company (not the employee) may disclose the communication."},
+],
+2: [ // Fraud Prevention & Deterrence - 110+ cards
+{front:"What are the three elements of the Fraud Triangle?",back:"1. PRESSURE — a non-shareable financial problem or motivation; 2. OPPORTUNITY — weak controls or access that make fraud possible and concealable; 3. RATIONALIZATION — a justification that makes the act feel acceptable (e.g., 'I'm just borrowing it,' 'I deserve it,' 'Everyone does it')."},
+{front:"What is the Fraud Diamond?",back:"An extension of the Fraud Triangle adding a 4th element: CAPABILITY — personal traits enabling fraud execution (position/authority, intelligence/creativity, confidence/ego, ability to coerce/deceive, and stress tolerance to sustain a long-running deception). Not everyone with POR will act on it."},
+{front:"Who coined the Fraud Triangle?",back:"Donald Cressey, in his 1953 book 'Other People's Money,' based on interviews with incarcerated embezzlers. He found all three elements — pressure, opportunity, and rationalization — consistently present in occupational fraud cases. His model remains the foundational framework in fraud theory."},
+{front:"What is Edwin Sutherland's contribution to fraud theory?",back:"Coined the term 'white-collar crime' in 1939 and developed differential association theory — criminal behavior is learned through social interaction with those who hold favorable attitudes toward crime. Challenged the view that crime was primarily a product of poverty or mental illness."},
+{front:"What is 'differential association theory'?",back:"Edwin Sutherland's theory that criminal behavior is learned in interaction with others. If a person's associations provide more definitions favorable to law violation than unfavorable, they are likely to commit crime. Explains how organizational culture can normalize fraud."},
+{front:"What is the 'tone at the top'?",back:"The ethical culture, values, and example set by senior management and the board of directors. Considered the single most influential factor in organizational fraud risk. When leaders model ethical behavior, employees are less likely to rationalize fraudulent acts."},
+{front:"What is a 'code of ethics'?",back:"A written statement of the values, principles, and standards that guide an organization's employees. Effective codes are: specific to the organization, regularly communicated and reinforced, applied consistently at all levels, accompanied by training, and enforced with real consequences."},
+{front:"What are the ACFE's four Code of Ethics principles?",back:"1. HONESTY — no false statements or misleading representations; 2. OBJECTIVITY — no bias, conflicts of interest, or undue influence; 3. COMPETENCE — only take engagements where adequately skilled; 4. CONFIDENTIALITY — protect client and investigation information."},
+{front:"What is a fraud risk assessment?",back:"A systematic process identifying and evaluating an organization's exposure to fraud. Steps: identify inherent fraud risks (by category and scheme), assess likelihood and impact, evaluate existing controls' adequacy, identify gaps, and develop responses. Should be updated periodically and after significant changes."},
+{front:"What is the COSO framework?",back:"Committee of Sponsoring Organizations framework for internal control. Five components: 1. Control Environment; 2. Risk Assessment; 3. Control Activities; 4. Information and Communication; 5. Monitoring. Widely used as the basis for designing, implementing, and evaluating internal controls including SOX 404."},
+{front:"What is the 'control environment'?",back:"The foundation of the COSO framework — the overall attitude, awareness, and actions of management and the board regarding internal controls. Elements: integrity and ethical values, board oversight, management philosophy, organizational structure, and commitment to competence. Sets the tone for all other controls."},
+{front:"What is a 'hotline' in fraud prevention?",back:"A confidential reporting mechanism (phone, email, web) allowing employees, customers, or others to report suspected fraud or misconduct. ACFE research shows organizations with hotlines detect fraud faster and with smaller losses. Most effective when anonymous, well-publicized, and responses are timely."},
+{front:"What is whistleblower protection?",back:"Legal protections preventing retaliation against employees who report suspected fraud or misconduct. Key statutes: SOX Section 806 (securities fraud by public companies), Dodd-Frank (SEC violations), False Claims Act (government fraud), and various state laws. Protects good-faith reporters even if ultimately wrong."},
+{front:"What is 'segregation of duties'?",back:"Dividing transaction processing so no single person controls authorization, recording, and custody of assets. Prevents an individual from both committing and concealing fraud. Key compensating control when full segregation is impossible (small organizations): management oversight and review."},
+{front:"What is a 'mandatory vacation' policy?",back:"Requiring employees to take uninterrupted vacations during which others cover their duties. Forces exposure of fraud schemes requiring continuous maintenance (like lapping). Most important for employees with custody of cash or assets and those who process and reconcile transactions."},
+{front:"What is 'job rotation'?",back:"Periodically moving employees between positions or functions. Reduces opportunity by preventing any individual from gaining exclusive long-term control. Deters fraud by increasing the likelihood that a successor will discover irregularities. Also prevents over-reliance on any one person's knowledge."},
+{front:"What is a 'pre-employment background check'?",back:"Investigation of a candidate's background before hiring — including criminal history, employment verification, education verification, credit history (for financial positions), and reference checks. Addresses the 'predisposition' element of fraud risk by identifying prior misconduct."},
+{front:"What is 'fidelity bonding'?",back:"Insurance that protects an employer from losses caused by employees' dishonest acts. While primarily a loss recovery mechanism rather than prevention, bonding requirements can deter fraud and ensure resources are available for recovery. Bonding is often required for employees handling large amounts of cash."},
+{front:"What is the 'control activities' component of COSO?",back:"The specific policies and procedures (the 'how') that help ensure management's directives are carried out. Includes: authorizations, reconciliations, physical controls over assets, segregation of duties, and performance reviews. These are what most people think of as 'internal controls.'"},
+{front:"What is 'monitoring' in COSO?",back:"Ongoing or periodic assessments of whether internal controls are designed appropriately and operating effectively. Includes management's regular oversight activities, internal audit, and data analytics. Identifies control deficiencies for timely remediation."},
+{front:"What is the 'Occupational Fraud Report'?",back:"ACFE's biennial 'Report to the Nations' — the largest study of occupational fraud globally. Key findings (consistent across editions): tips are #1 detection method; median duration before detection is ~14 months; organizations with hotlines and audits suffer smaller losses; males commit more but females cause slightly larger median losses."},
+{front:"What is an 'audit committee'?",back:"A committee of independent board directors overseeing financial reporting, internal controls, and audit functions. Under SOX, required for public companies, must include at least one financial expert, oversees the external auditor relationship, and establishes whistleblower procedures. Critical oversight for management fraud."},
+{front:"What is 'corporate governance'?",back:"The system of rules, practices, and processes by which a company is directed and controlled. Key participants: board of directors, audit committee, management, internal audit, external audit. Strong governance — independent boards, transparent reporting, accountability mechanisms — is a fundamental fraud deterrent."},
+{front:"What is 'ethical culture'?",back:"The set of values, behaviors, and norms related to integrity and ethics within an organization. Shaped by leadership example, consistent enforcement, open communication, and rewards for ethical behavior. Organizations with strong ethical cultures have significantly lower fraud rates and losses."},
+{front:"What is 'proactive fraud auditing'?",back:"Using data analytics and continuous monitoring to search for fraud indicators proactively, rather than waiting for complaints or audit findings. Examples: Benford's Law analysis, duplicate payment searches, vendor master file reviews, and anomaly detection in expense reports."},
+{front:"What is the 'False Claims Act' whistleblower provision?",back:"Allows private citizens (qui tam relators) to file lawsuits on behalf of the U.S. government against those who defraud federal programs. Successful relators receive 15-30% of recovery. Created powerful financial incentives for reporting government contractor fraud."},
+{front:"What is the COSO Fraud Risk Management Guide?",back:"A supplement to the COSO Internal Control framework specifically addressing fraud risk. Recommends: (1) fraud risk governance structure; (2) fraud risk assessment process; (3) fraud control activities; (4) fraud investigation and corrective action; (5) ongoing monitoring of the program."},
+{front:"What is the 'opportunity' element of the Fraud Triangle?",back:"The ability to both commit and conceal a fraud. Primarily created by weak internal controls — poor segregation of duties, lack of oversight, excessive trust without verification. Reducing opportunity is the most directly actionable anti-fraud strategy for organizations."},
+{front:"What is 'rationalization'?",back:"The fraudster's mental process of justifying fraudulent behavior: 'I'm just borrowing it'; 'The company owes me'; 'Everyone does it'; 'I'll pay it back'; 'Management is corrupt anyway.' Strong ethics culture and regular ethics communication can challenge these rationalizations."},
+{front:"What is the 'three lines of defense' model?",back:"1st Line: Management (owns and manages risk, implements controls); 2nd Line: Risk/Compliance functions (oversee management's controls, provide expertise); 3rd Line: Internal Audit (provides independent assurance to the board). All three lines work together in fraud risk management."},
+{front:"What is a 'fraud risk matrix'?",back:"A tool organizing identified fraud risks by likelihood and potential impact, allowing prioritization of anti-fraud controls. High-likelihood, high-impact risks receive the most rigorous controls. The matrix also maps existing controls to each risk and identifies gaps."},
+{front:"What are 'red flags' in employee behavior?",back:"Behavioral indicators suggesting an employee may be committing fraud: living beyond their means, experiencing financial difficulties, unusually close relationships with vendors, excessive control over job duties (resists oversight), defensiveness about their work, and working unusual hours without explanation."},
+{front:"What is a 'surprise audit'?",back:"An unannounced audit of a specific area, function, or location. Highly effective as a deterrent — employees who know surprise audits occur are less likely to engage in fraud that would be revealed by such an audit. Also more likely to catch ongoing fraud than scheduled audits."},
+{front:"What is 'data analytics' in fraud prevention?",back:"Using technology to continuously analyze transaction data for anomalies, patterns, and fraud indicators. Effective programs use automated rules and exception reports to flag items for human review. Far more efficient than sampling; can examine 100% of transactions."},
+{front:"What is 'vendor due diligence'?",back:"Verifying vendors before approving them — confirming legal existence, physical address, contact information, beneficial ownership, and absence of conflicts of interest with employees. A properly maintained vendor master file with periodic re-verification is a foundational anti-fraud control."},
+{front:"What is 'tone in the middle'?",back:"The ethical environment set by middle management, which has the most direct day-to-day influence on employees. Even if top leadership sets a strong ethical tone, it may not reach front-line employees without reinforcement from supervisors. Middle management is a critical link in ethical culture."},
+{front:"What is a 'control deficiency'?",back:"A weakness in internal controls — either in design (control is not present or designed to prevent/detect a risk) or operation (a properly designed control doesn't function consistently). Material weaknesses (reasonable possibility of material misstatement) must be reported by public companies under SOX 404."},
+{front:"What is 'corporate social responsibility' in fraud context?",back:"An organization's commitment to operating ethically and contributing positively to society. Companies with strong CSR programs tend to have better anti-fraud controls, stronger ethical cultures, and more robust governance — not because CSR prevents fraud directly, but because both reflect underlying ethical values."},
+{front:"What is 'continuous monitoring'?",back:"Using automated systems to monitor transactions and controls on an ongoing basis (daily/weekly) rather than periodic audits. Exception reports are generated when transactions fall outside expected parameters. Reduces fraud duration and losses by detecting anomalies faster than periodic review."},
+{front:"What is an 'ethics hotline' best practice?",back:"Accessible 24/7; fully anonymous option; managed by independent third party (not HR); well-publicized throughout organization; all credible reports followed up promptly; reporters protected from retaliation; management reports to audit committee regularly on complaint trends and resolutions."},
+{front:"What is the 'pressure' element for management-level fraud?",back:"Management fraud is often driven by organizational pressures: meeting analyst earnings expectations, hitting performance targets tied to executive compensation, preserving investor confidence, avoiding disclosure of business problems, or maintaining executive compensation levels dependent on stock price."},
+{front:"What is a 'control self-assessment' (CSA)?",back:"A process where management and employees evaluate the effectiveness of their own controls and risk management processes, facilitated by internal audit. CSA can identify control gaps and increase ownership of controls, though objectivity concerns must be managed (since evaluators may have conflicts of interest)."},
+{front:"What is 'fraud awareness training'?",back:"Educating employees about the types of fraud the organization faces, common red flags, reporting mechanisms, and consequences of fraud. ACFE research shows organizations with fraud training detect fraud faster and suffer smaller losses. Training reinforces the ethical culture and removes the 'I didn't know' defense."},
+{front:"What is the 'ACFE's Fraud Triangle vs. Fraud Diamond'?",back:"Fraud Triangle (Cressey, 1953): Pressure + Opportunity + Rationalization. Fraud Diamond (Wolfe & Hermanson, 2004): adds Capability — personal traits enabling fraud execution. The Diamond acknowledges that not everyone with the other three elements will act — the individual's capability to execute and sustain the fraud matters."},
+{front:"What is 'internal audit independence'?",back:"Internal audit must be organizationally independent from the functions it audits — reporting to the audit committee, not management. Independence is compromised if internal audit reports to the CFO or cannot report findings without management approval. Critical for its effectiveness as a fraud detection mechanism."},
+{front:"What is an 'exit interview' as a fraud prevention tool?",back:"Interviewing departing employees about fraud and control concerns. Departing employees — especially those who left voluntarily — may be willing to share concerns they felt unable to raise while employed. Can surface fraud or control issues that continued employment inhibited them from disclosing."},
+{front:"What is 'anti-money laundering' (AML) compliance?",back:"Programs financial institutions implement to detect and prevent money laundering, including: Know Your Customer (KYC) procedures, transaction monitoring, suspicious activity reporting (SARs), and employee training. Required by the Bank Secrecy Act; enforced by FinCEN and banking regulators."},
+{front:"What is 'social engineering' in fraud?",back:"Manipulating people through psychological tactics rather than technical means to obtain information or access. Examples: pretexting (creating a false scenario), phishing (deceptive emails), tailgating (following someone into a secure area). Awareness training is the primary defense."},
+{front:"What is the 'fraud risk appetite'?",back:"The amount and type of fraud risk an organization is willing to accept in pursuit of its objectives. Organizations must define their fraud risk appetite to calibrate controls — lower appetite requires stronger controls. Excessive risk acceptance (or no defined appetite) is itself a governance failure."},
+{front:"What is the 'fraud risk governance' structure?",back:"Defines who is responsible for fraud risk management — typically: board (ultimate oversight), audit committee (oversight of controls and investigations), management (design and operation of controls), internal audit (independent assurance), and compliance/ethics functions (day-to-day management)."},
+{front:"What is the 'three Cs' of white-collar crime?",back:"Some frameworks describe white-collar crime motivation as: Circumstances (situational pressures), Character (ethical values and personal integrity), and Corporate Culture (organizational environment and norms). Strong ethical culture addresses the character and culture components; robust controls address circumstances."},
+{front:"What is 'normalization of deviance'?",back:"The gradual process by which unethical or fraudulent behavior becomes acceptable within an organization — small violations go unchallenged, standards erode, and eventually serious fraud occurs. The NASA Challenger disaster is a classic non-fraud example; organizational frauds like Enron show the same pattern."},
+{front:"What is 'whistleblower retaliation'?",back:"Adverse employment action (termination, demotion, harassment) against an employee for reporting fraud or misconduct. Prohibited under multiple federal statutes (SOX, Dodd-Frank, False Claims Act). Retaliation discourages others from reporting and is itself a separate legal violation."},
+{front:"What is 'management's assessment of internal controls' (SOX 404)?",back:"SOX Section 404(a) requires management of public companies to assess and report on the effectiveness of internal controls over financial reporting annually. Section 404(b) requires external auditor attestation for larger accelerated filers. The most time-consuming and costly SOX provision."},
+{front:"What is 'KYC' (Know Your Customer)?",back:"Financial institution obligation to verify the identity of customers, understand the nature of their business, and assess the risk of money laundering before and during business relationships. Required by BSA/AML regulations. Helps prevent fraudsters from using financial institutions to launder proceeds."},
+{front:"What is a 'surprise cash count'?",back:"An unannounced count of cash on hand (petty cash, tills, vaults). Compares actual cash to book balance without warning to the custodian. Effective deterrent against cash theft and lapping because the fraudster cannot 'borrow' back stolen cash before the count occurs."},
+{front:"What is 'ethics by design'?",back:"Building ethical constraints into business processes and systems rather than relying solely on individual judgment — for example, system controls that require two approvers for transactions above thresholds, automated alerts for unusual patterns, or required documentation fields that make it harder to process fictitious transactions."},
+{front:"What is 'vicarious liability'?",back:"Legal doctrine holding an employer responsible for the wrongful acts of its employees committed within the scope of employment. Organizations can be criminally and civilly liable for fraud committed by their employees — strong incentive for robust fraud prevention programs."},
+{front:"What are 'compensating controls'?",back:"Controls that mitigate fraud risk when primary controls (like full segregation of duties) are not feasible — often in small organizations. Examples: owner/manager review of all transactions, independent bank reconciliation review, external bookkeeper, or mandatory dual signatures on all checks."},
+{front:"What is 'vendor master file fraud'?",back:"Unauthorized additions or modifications to the vendor master file — adding shell companies, changing legitimate vendor bank accounts to fraudster-controlled accounts, or reinstating terminated vendors. Controlled by: restricting write access, requiring dual approval for new vendors, and periodic review of the master file."},
+{front:"What is the significance of 'median loss' in fraud statistics?",back:"ACFE uses median (not mean/average) because fraud losses are highly skewed — a few massive frauds would distort averages. Median losses show the typical fraud. Median losses are lowest for asset misappropriation, middle for corruption, and highest for financial statement fraud."},
+{front:"What is 'collusion' and how does it affect controls?",back:"Two or more employees conspiring to commit fraud together. Collusion defeats segregation of duties (each co-conspirator covers the other's control point), significantly increases the difficulty of detection, and is cited as a primary reason why no control system can provide absolute protection."},
+{front:"What is 'perp walk' liability for fraud examiners?",back:"Publicly escorting a fraud suspect (as law enforcement sometimes does) before formal charges. Private-sector fraud examiners must avoid this — it could constitute defamation, malicious prosecution, or tortious interference if the subject is later cleared. Protect subject dignity until formal charges are established."},
+{front:"What is the 'Sarbanes-Oxley Act Section 906'?",back:"Requires CEO and CFO to personally certify that each periodic report filed with the SEC fully complies with securities laws and fairly presents the company's financial condition. False certification can result in criminal penalties — fines up to $5M and imprisonment up to 20 years."},
+{front:"What is the 'open-door policy' in fraud prevention?",back:"An organizational culture and formal policy encouraging employees to raise concerns, ask questions, and report problems without fear of retaliation. The most effective supplement to formal whistleblower hotlines — many employees prefer to speak to a trusted supervisor before using an anonymous channel."},
+{front:"What is 'risk-based auditing'?",back:"Allocating internal audit resources to highest-risk areas rather than following a fixed rotation schedule. Requires ongoing risk assessment to identify where fraud risk is highest. More efficient than comprehensive coverage and more likely to detect fraud where it is most likely to occur."},
+{front:"What are 'entity-level controls'?",back:"Controls that operate across the entire organization rather than within a specific process — including the control environment, risk assessment process, monitoring activities, and IT general controls. COSO distinguishes entity-level from transaction-level (process) controls. Strong entity-level controls enhance all other controls."},
+{front:"What is a 'fraud prevention policy'?",back:"A formal document stating the organization's commitment to preventing, detecting, and responding to fraud — defining fraud, establishing responsibilities for prevention, specifying reporting mechanisms, and stating consequences for fraud. Communicates expectations and creates an enforcement framework."},
+{front:"What is 'ACFE's fraud prevention checkup'?",back:"ACFE's tool for organizations to assess their fraud prevention program — evaluating fraud risk oversight, anti-fraud programs and controls, proactive detection measures, and investigation/correction processes. Provides a structured benchmark for evaluating the comprehensiveness of anti-fraud efforts."},
+{front:"What is 'economic extortion' as a form of corruption?",back:"An employee (or public official) demands payment from a vendor or contractor as a condition of receiving business — the employee uses their position to coerce payments rather than accepting voluntary bribes. Like bribery, it corrupts the integrity of business decisions and relationships."},
+{front:"What is the importance of 'independence' in anti-fraud controls?",back:"Controls operated by the same person who performs the underlying transaction are ineffective — reconcilers who also handle cash, internal auditors who report to the CFO, approvers who can override their own approvals. Independence — both in appearance and fact — is foundational to control effectiveness."},
+{front:"What is the 'fraud risk factor' assessment in auditing?",back:"Under AU-C 240, auditors must identify and assess fraud risk factors — conditions indicating incentives/pressures to commit fraud, opportunities to commit fraud, and attitudes/rationalizations. These factors do not prove fraud but indicate areas requiring heightened scrutiny and more robust audit procedures."},
+{front:"What is 'ethical decision-making' training?",back:"Training that equips employees to recognize ethical dilemmas, understand the consequences of unethical choices, and develop skills for resolving conflicts between personal interest and professional obligation. Most effective when using realistic scenarios related to employees' actual work situations."},
+{front:"What is 'due professional care'?",back:"The standard of care required of a fraud examiner — applying the diligence, competence, and judgment expected of a reasonably prudent professional with comparable training and experience. Includes adequate planning, following leads, documenting work, and recognizing when specialist expertise is needed."},
+{front:"What are 'physical controls' over assets?",back:"Physical security measures protecting assets from theft or unauthorized access — cash registers, safes, locked storage, access-controlled facilities, security cameras, and inventory tracking systems. Directly reduce the opportunity component of the Fraud Triangle by limiting access to valuable assets."},
+{front:"What is 'anti-fraud culture'?",back:"An organizational environment where fraud is universally understood to be unacceptable, where employees feel safe reporting concerns, where controls are respected rather than resented, and where ethical behavior is rewarded and modeled at all levels. The ultimate fraud prevention objective."},
+],
+};
+
+let currentSection = 0;
+let deck = [];
+let ratings = {};
+let current = 0;
+let flipped = false;
+let filter = 'all';
+let autoTimer = null;
+let autoOn = false;
+let autoPhase = 'front';
+
+function init() {
+  buildSectionTabs();
+  loadSection(0);
+}
+
+function buildSectionTabs() {
+  const labels = ["Fraud Schemes & Financial Crimes","Fraud Investigations & Legal Issues","Fraud Prevention & Deterrence"];
+  const row = document.getElementById('sec-tabs');
+  row.innerHTML = '';
+  labels.forEach((lbl, i) => {
+    const b = document.createElement('button');
+    b.className = 'sec-tab' + (i === currentSection ? ' active' : '');
+    b.textContent = lbl;
+    b.onclick = () => { stopAuto(); currentSection = i; loadSection(i); buildSectionTabs(); };
+    row.appendChild(b);
+  });
+}
+
+function loadSection(idx) {
+  currentSection = idx;
+  ratings = {};
+  filter = 'all';
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('f-all').classList.add('active');
+  buildDeck();
+}
+
+function buildDeck() {
+  let cards = ALL_CARDS[currentSection].map((c, i) => ({...c, origIdx: i}));
+  // Filter
+  if (filter === 'again') cards = cards.filter(c => ratings[c.origIdx] === 'again');
+  else if (filter === 'hard') cards = cards.filter(c => ratings[c.origIdx] === 'hard');
+  else if (filter === 'unseen') cards = cards.filter(c => !ratings[c.origIdx]);
+  // Shuffle
+  for (let i = cards.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [cards[i], cards[j]] = [cards[j], cards[i]];
+  }
+  deck = cards;
+  current = 0;
+  document.getElementById('deck-size').textContent = deck.length + ' cards';
+  if (deck.length === 0) {
+    showDoneScreen('No cards match this filter. Try a different filter or restart the deck.');
+  } else {
+    document.getElementById('done-screen').style.display = 'none';
+    document.getElementById('card-scene').style.display = 'block';
+    document.getElementById('rating-row').style.display = 'flex';
+    renderCard();
+    updateStats();
+  }
+}
+
+function renderCard() {
+  if (deck.length === 0) return;
+  flipped = false;
+  document.getElementById('card-wrap').classList.remove('flipped');
+  const c = deck[current];
+  const sectionNames = ["Fraud Schemes","Investigations & Law","Prevention & Deterrence"];
+  const rating = ratings[c.origIdx];
+  const ratingBadge = rating ? ` | ${rating.toUpperCase()}` : ' | UNSEEN';
+  document.getElementById('card-front').innerHTML = `
+    <div class="card-tag">${sectionNames[currentSection]}${ratingBadge}</div>
+    <div class="card-hint">Click to reveal answer</div>
+    <div class="card-text">${c.front}</div>
+    <div class="card-number">Card ${current+1} of ${deck.length}</div>
+  `;
+  document.getElementById('card-back').innerHTML = `
+    <div class="card-tag">Answer</div>
+    <div class="card-text">${c.back}</div>
+    <div class="card-number">Card ${current+1} of ${deck.length}</div>
+  `;
+  const pct = deck.length ? Math.round(((current + 1) / deck.length) * 100) : 0;
+  document.getElementById('prog-fill').style.width = pct + '%';
+  document.getElementById('prog-label').textContent = `${current+1} / ${deck.length}`;
+  document.getElementById('prev-btn').disabled = current === 0;
+  document.getElementById('next-btn').disabled = current === deck.length - 1;
+}
+
+function flipCard() {
+  flipped = !flipped;
+  document.getElementById('card-wrap').classList.toggle('flipped', flipped);
+}
+
+function prevCard() { stopAuto(); if (current > 0) { current--; renderCard(); } }
+function nextCard() { stopAuto(); if (current < deck.length - 1) { current++; renderCard(); } else { showDoneScreen(); } }
+
+function rateCard(rating) {
+  if (deck.length === 0) return;
+  const c = deck[current];
+  ratings[c.origIdx] = rating;
+  updateStats();
+  if (current < deck.length - 1) { current++; renderCard(); }
+  else { showDoneScreen(); }
+}
+
+function showDoneScreen(msg) {
+  const all = ALL_CARDS[currentSection];
+  const easy = all.filter((_, i) => ratings[i] === 'easy').length;
+  const good = all.filter((_, i) => ratings[i] === 'good').length;
+  const hard = all.filter((_, i) => ratings[i] === 'hard').length;
+  const again = all.filter((_, i) => ratings[i] === 'again').length;
+  const ds = document.getElementById('done-screen');
+  const sub = msg || `You've rated ${easy + good + hard + again} of ${all.length} cards — Easy: ${easy} | Good: ${good} | Hard: ${hard} | Again: ${again}`;
+  document.getElementById('done-sub').textContent = sub;
+  document.getElementById('card-scene').style.display = 'none';
+  document.getElementById('rating-row').style.display = 'none';
+  ds.style.display = 'block';
+}
+
+function updateStats() {
+  const all = ALL_CARDS[currentSection];
+  document.getElementById('st-total').textContent = all.length;
+  document.getElementById('st-easy').textContent = all.filter((_, i) => ratings[i] === 'easy').length;
+  document.getElementById('st-good').textContent = all.filter((_, i) => ratings[i] === 'good').length;
+  document.getElementById('st-hard').textContent = all.filter((_, i) => ratings[i] === 'hard').length;
+  document.getElementById('st-again').textContent = all.filter((_, i) => ratings[i] === 'again').length;
+  document.getElementById('st-unseen').textContent = all.filter((_, i) => !ratings[i]).length;
+}
+
+function reshuffleCards() { stopAuto(); buildDeck(); }
+function restartDeck() { stopAuto(); ratings = {}; buildDeck(); }
+function setFilter(f) {
+  filter = f;
+  stopAuto();
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('f-' + f).classList.add('active');
+  buildDeck();
+}
+
+function toggleAuto() {
+  if (autoOn) { stopAuto(); }
+  else { startAuto(); }
+}
+
+function startAuto() {
+  autoOn = true;
+  autoPhase = 'front';
+  document.getElementById('auto-btn').classList.add('active');
+  document.getElementById('auto-btn').textContent = '⏸ Auto-flip (5s)';
+  autoStep();
+}
+
+function stopAuto() {
+  autoOn = false;
+  clearTimeout(autoTimer);
+  document.getElementById('auto-btn').classList.remove('active');
+  document.getElementById('auto-btn').textContent = '▶ Auto-flip (5s)';
+}
+
+function autoStep() {
+  if (!autoOn) return;
+  autoTimer = setTimeout(() => {
+    if (!autoOn) return;
+    if (autoPhase === 'front') {
+      flipCard();
+      autoPhase = 'back';
+      autoStep();
+    } else {
+      autoPhase = 'front';
+      if (current < deck.length - 1) { current++; renderCard(); autoStep(); }
+      else { stopAuto(); showDoneScreen(); }
+    }
+  }, 5000);
+}
+
+init();
+</script>
+</body>
+</html>
