@@ -98,13 +98,91 @@ body.dark-mode .rate-btn.again { background:#3b1f22; }
 body.dark-mode .rate-btn.hard { background:#3a2f13; }
 body.dark-mode .rate-btn.good { background:#143326; }
 body.dark-mode .rate-btn.easy { background:#102a4c; }
+
+
+/* Shared app navigation/header */
+.top-bar {
+  gap: 16px;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+.header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 240px;
+}
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  margin-left: auto;
+}
+.app-nav {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.app-nav a {
+  background: rgba(255,255,255,0.12);
+  color: #fff;
+  text-decoration: none;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  transition: background .2s, transform .2s;
+}
+.app-nav a:hover,
+.app-nav a.active-page {
+  background: #1a5fb4;
+  color: #fff;
+  transform: translateY(-1px);
+}
+.resume-status {
+  font-size: 12px;
+  color: #8ca0b8;
+  width: 100%;
+  text-align: right;
+}
+body.dark-mode .app-nav a {
+  background: rgba(255,255,255,0.10);
+}
+body.dark-mode .app-nav a:hover,
+body.dark-mode .app-nav a.active-page {
+  background: #1a5fb4;
+  color: #fff;
+}
+@media (max-width: 720px) {
+  .top-bar { align-items: stretch; }
+  .header-right { justify-content: flex-start; margin-left: 0; }
+  .resume-status { text-align: left; }
+}
+
 </style>
 </head>
 <body>
 <div id="app">
   <div class="top-bar">
-    <h1>CFE Flashcards</h1>
-    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end;"><button class="ctrl-btn" id="theme-btn" onclick="toggleTheme()" style="padding:7px 12px;">🌙 Dark Mode</button><span id="deck-size" style="font-size:13px;color:#8ca0b8;"></span></div>
+    <div class="header-left">
+      <h1>CFE Flashcards</h1>
+      <nav class="app-nav" aria-label="Main navigation">
+        <a href="index.html">🏠 Home</a>
+        <a href="readings.html">📖 Readings</a>
+        <a href="flashcards.html" class="active-page" aria-current="page">🃏 Flashcards</a>
+        <a href="quizzes.html">📝 Quizzes</a>
+        <a href="exam.html">🎯 Full Exam</a>
+      </nav>
+    </div>
+    <div class="header-right">
+      <button class="ctrl-btn" id="theme-btn" onclick="toggleTheme()" style="padding:7px 12px;">🌙 Dark Mode</button>
+      <button class="ctrl-btn" id="resume-btn" onclick="resumeStudy()" style="padding:7px 12px;">▶ Resume Study</button>
+      <span id="deck-size" style="font-size:13px;color:#8ca0b8;"></span>
+      <div class="resume-status" id="resume-status">Progress saves automatically</div>
+    </div>
   </div>
   <div class="sec-row" id="sec-tabs"></div>
   <div class="stats-bar">
@@ -566,6 +644,7 @@ function init() {
     window.speechSynthesis.onvoiceschanged = populateVoices;
   }
   loadSection(0);
+  updateResumeStatus();
   updateAutoReadButton();
   updateAutoAdvanceAudioButton();
 }
@@ -585,6 +664,8 @@ function buildSectionTabs() {
 }
 
 function loadSection(idx) {
+  stopAuto();
+  stopSpeech();
   currentSection = idx;
   ratings = {};
   filter = 'all';
@@ -642,6 +723,7 @@ function renderCard() {
   document.getElementById('prog-label').textContent = `${current+1} / ${deck.length}`;
   document.getElementById('prev-btn').disabled = current === 0;
   document.getElementById('next-btn').disabled = current === deck.length - 1;
+  saveStudyProgress();
   if (autoRead) speakBoth();
 }
 
@@ -707,11 +789,12 @@ function updateStats() {
   document.getElementById('st-unseen').textContent = all.filter((_, i) => !ratings[i]).length;
 }
 
-function reshuffleCards() { stopAuto(); buildDeck(); }
-function restartDeck() { stopAuto(); ratings = {}; buildDeck(); }
+function reshuffleCards() { stopAuto(); stopSpeech(); buildDeck(); }
+function restartDeck() { stopAuto(); stopSpeech(); ratings = {}; localStorage.removeItem('cfeFlashcardsProgress'); buildDeck(); }
 function setFilter(f) {
   filter = f;
   stopAuto();
+  stopSpeech();
   document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('f-' + f).classList.add('active');
   buildDeck();
@@ -1021,6 +1104,72 @@ function loadSpeechSettings() {
   updateSpeechSettingLabels();
 }
 
+
+function saveStudyProgress() {
+  if (!deck.length) return;
+  const progress = {
+    section: currentSection,
+    filter,
+    currentOrigIdx: deck[current] ? deck[current].origIdx : 0,
+    currentPosition: current,
+    savedAt: new Date().toISOString()
+  };
+  localStorage.setItem('cfeFlashcardsProgress', JSON.stringify(progress));
+  updateResumeStatus();
+}
+
+function updateResumeStatus() {
+  const el = document.getElementById('resume-status');
+  if (!el) return;
+  const raw = localStorage.getItem('cfeFlashcardsProgress');
+  if (!raw) {
+    el.textContent = 'Progress saves automatically';
+    return;
+  }
+  try {
+    const p = JSON.parse(raw);
+    const labels = ["Fraud Schemes", "Investigations & Law", "Prevention & Deterrence"];
+    const cardLabel = Number.isFinite(p.currentPosition) ? `Card ${p.currentPosition + 1}` : 'Saved card';
+    el.textContent = `Saved: ${labels[p.section] || 'Flashcards'} • ${cardLabel}`;
+  } catch {
+    el.textContent = 'Progress saves automatically';
+  }
+}
+
+function resumeStudy() {
+  const raw = localStorage.getItem('cfeFlashcardsProgress');
+  if (!raw) {
+    updateResumeStatus();
+    return;
+  }
+  try {
+    const p = JSON.parse(raw);
+    stopAuto();
+    stopSpeech();
+    currentSection = Number.isInteger(p.section) ? p.section : 0;
+    filter = p.filter || 'all';
+    buildSectionTabs();
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    const filterButton = document.getElementById('f-' + filter);
+    if (filterButton) filterButton.classList.add('active');
+    let cards = ALL_CARDS[currentSection].map((c, i) => ({...c, origIdx: i}));
+    if (filter === 'again') cards = cards.filter(c => ratings[c.origIdx] === 'again');
+    else if (filter === 'hard') cards = cards.filter(c => ratings[c.origIdx] === 'hard');
+    else if (filter === 'unseen') cards = cards.filter(c => !ratings[c.origIdx]);
+    deck = cards;
+    const byOrig = deck.findIndex(c => c.origIdx === p.currentOrigIdx);
+    current = byOrig >= 0 ? byOrig : Math.min(Math.max(p.currentPosition || 0, 0), Math.max(deck.length - 1, 0));
+    document.getElementById('deck-size').textContent = deck.length + ' cards';
+    document.getElementById('done-screen').style.display = 'none';
+    document.getElementById('card-scene').style.display = 'block';
+    document.getElementById('rating-row').style.display = 'flex';
+    renderCard();
+    updateStats();
+  } catch {
+    localStorage.removeItem('cfeFlashcardsProgress');
+    updateResumeStatus();
+  }
+}
 
 init();
 </script>
