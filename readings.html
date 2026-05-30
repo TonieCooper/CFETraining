@@ -38,121 +38,65 @@
   .callout { background: #e8f4ff; border-left: 4px solid #1a5fb4; border-radius: 0 6px 6px 0; padding: 12px 16px; margin: 14px 0; font-size: 15px; color: #1a3a5f; }
   #status-bar { background: #1e2a3a; color: #8ca0b8; font-size: 12px; padding: 6px 24px; display: flex; gap: 20px; }
 
-
-  /* Enhanced controls, theme support, and responsive polish */
-  :root {
-    --page-bg: #f8f7f4;
-    --text-main: #1a1a1a;
-    --panel-bg: #ffffff;
-    --panel-border: #e0ddd6;
-    --sidebar-bg: #1e2a3a;
-    --sidebar-hover: #2d3f52;
-    --sidebar-soft: #253447;
-    --sidebar-text: #e8ecf0;
-    --muted-text: #666666;
-    --muted-light: #888888;
-    --button-bg: #1e2a3a;
-    --button-hover: #2d3f52;
-    --button-active: #1a5fb4;
-    --accent: #1a5fb4;
-    --accent-soft: #e8f4ff;
-    --reading-bg: #fff8e1;
-    --reading-border: #f0a500;
-    --paragraph-hover: #f0f0ec;
-    --done-text: #888888;
-    --control-field-bg: #ffffff;
-    --control-field-text: #1a1a1a;
+  /* Shared app navigation and inline topic quizzes */
+  .app-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
   }
-
-  body.dark-mode {
-    --page-bg: #101722;
-    --text-main: #e9eef7;
-    --panel-bg: #162234;
-    --panel-border: #2b3b50;
-    --sidebar-bg: #0b1220;
-    --sidebar-hover: #172235;
-    --sidebar-soft: #111b2b;
-    --sidebar-text: #e9eef7;
-    --muted-text: #b4bfd0;
-    --muted-light: #8d9aaf;
-    --button-bg: #2d6cdf;
-    --button-hover: #3a7bf2;
-    --button-active: #d4a017;
-    --accent: #7eb8f7;
-    --accent-soft: #132b45;
-    --reading-bg: #332a12;
-    --reading-border: #d4a017;
-    --paragraph-hover: #1b2a3e;
-    --done-text: #8d9aaf;
-    --control-field-bg: #101722;
-    --control-field-text: #e9eef7;
-  }
-
-  body { background: var(--page-bg); color: var(--text-main); transition: background 0.2s ease, color 0.2s ease; }
-  #sidebar { background: var(--sidebar-bg); color: var(--sidebar-text); }
-  #sidebar h1 { border-bottom-color: var(--sidebar-hover); }
-  .section-btn:hover, .section-btn.active { background: var(--sidebar-hover); }
-  .topic-btn:hover, .topic-btn.active { background: var(--sidebar-soft); }
-  #controls { background: var(--panel-bg); border-bottom-color: var(--panel-border); }
-  #controls button { background: var(--button-bg); }
-  #controls button:hover { background: var(--button-hover); }
-  #controls button.active { background: var(--button-active); }
-  #progress-bar { background: var(--panel-border); }
-  #progress-fill { background: var(--accent); }
-  #section-title, .heading { color: var(--sidebar-bg); }
-  body.dark-mode #section-title, body.dark-mode .heading { color: #e9eef7; }
-  #topic-title { color: var(--muted-text); border-bottom-color: var(--panel-border); }
-  .para:hover { background: var(--paragraph-hover); }
-  .para.reading { background: var(--reading-bg); border-left-color: var(--reading-border); }
-  .para.done { color: var(--done-text); }
-  .subheading { color: var(--muted-text); }
-  .callout { background: var(--accent-soft); border-left-color: var(--accent); color: var(--text-main); }
-  #status-bar { background: var(--sidebar-bg); color: var(--muted-light); }
-  #speed-label, .control-label { font-size: 12px; color: var(--muted-text); white-space: nowrap; }
-  #para-counter { color: var(--muted-light) !important; }
-  .control-group { display: flex; align-items: center; gap: 8px; flex-wrap: nowrap; }
-  #voice-select, #pitch, #volume {
-    background: var(--control-field-bg);
-    color: var(--control-field-text);
-    border: 1px solid var(--panel-border);
+  .app-nav a {
+    text-decoration: none;
+    background: var(--button-bg);
+    color: #fff;
     border-radius: 6px;
-    padding: 6px 8px;
-    font-family: inherit;
-    font-size: 12px;
+    padding: 7px 12px;
+    cursor: pointer;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: background 0.15s, transform 0.15s;
   }
-  #voice-select { width: min(280px, 40vw); }
-  #pitch, #volume { width: 72px; cursor: pointer; }
-  .home-btn { text-decoration: none; background: var(--button-bg); color: #fff; border-radius: 6px; padding: 7px 16px; cursor: pointer; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; transition: background 0.15s; }
-  .home-btn:hover { background: var(--button-hover); }
-  #resume-card {
-    display: none;
-    background: var(--panel-bg);
+  .app-nav a:hover { background: var(--button-hover); transform: translateY(-1px); }
+  .app-nav a.active-page { background: var(--accent); color: #fff; }
+  .quiz-block {
+    margin: 34px 0 18px;
+    padding: 22px;
+    border-radius: 14px;
     border: 1px solid var(--panel-border);
-    border-left: 4px solid var(--accent);
-    border-radius: 12px;
-    padding: 16px 18px;
-    margin-bottom: 22px;
+    background: var(--panel-bg);
     box-shadow: 0 8px 22px rgba(30, 42, 58, 0.08);
   }
-  #resume-card.show { display: block; }
-  .resume-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 14px; margin-bottom: 10px; }
-  .resume-top h2 { color: var(--text-main); font-size: 17px; line-height: 1.2; margin: 0; }
-  #resume-details { color: var(--muted-text); font-size: 13px; margin-bottom: 12px; }
-  .resume-actions { display: flex; flex-wrap: wrap; gap: 10px; }
-  .resume-actions button { background: var(--button-bg); color: #fff; border: none; border-radius: 6px; padding: 7px 14px; cursor: pointer; font-size: 13px; font-family: inherit; }
-  .resume-actions button:hover { background: var(--button-hover); }
-  .resume-actions .secondary { background: transparent; color: var(--muted-text); border: 1px solid var(--panel-border); }
-  .resume-actions .secondary:hover { background: var(--paragraph-hover); color: var(--text-main); }
-  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+  .quiz-block h3 { font-size: 20px; color: var(--text-main); margin-bottom: 8px; }
+  .quiz-block .quiz-intro { color: var(--muted-text); font-size: 14px; margin-bottom: 18px; }
+  .quiz-question { padding: 16px 0; border-top: 1px solid var(--panel-border); }
+  .quiz-question:first-of-type { border-top: none; }
+  .quiz-question p { font-weight: 700; margin-bottom: 10px; line-height: 1.5; }
+  .quiz-option { display: block; margin: 8px 0; padding: 8px 10px; border-radius: 8px; cursor: pointer; color: var(--text-main); }
+  .quiz-option:hover { background: var(--paragraph-hover); }
+  .quiz-option input { margin-right: 8px; }
+  .quiz-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 16px; }
+  .quiz-actions button {
+    background: var(--button-bg);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 9px 16px;
+    cursor: pointer;
+    font-size: 13px;
+    font-family: inherit;
+  }
+  .quiz-actions button:hover { background: var(--button-hover); }
+  .quiz-result { font-weight: 700; color: var(--accent); }
+  .quiz-feedback { margin-top: 14px; display: grid; gap: 8px; }
+  .quiz-feedback div { padding: 10px 12px; border-radius: 8px; background: var(--accent-soft); color: var(--text-main); font-size: 14px; }
+  .quiz-feedback .wrong { border-left: 4px solid #c0392b; }
+  .quiz-feedback .correct { border-left: 4px solid #2d7a3a; }
 
   @media (max-width: 900px) {
-    #app { flex-direction: column; height: auto; min-height: 100vh; overflow: visible; }
-    #sidebar { width: 100%; min-width: 0; max-height: 280px; }
-    #main { min-height: 70vh; }
-    #content-area { padding: 24px 20px; }
-    #controls { padding: 10px 12px; }
-    #voice-select { width: 100%; }
-    .control-group { width: 100%; }
+    .app-nav { width: 100%; }
+    .app-nav a { flex: 1 1 auto; justify-content: center; }
   }
 
 </style>
@@ -165,49 +109,16 @@
   </div>
   <div id="main">
     <div id="controls">
-      <a class="home-btn" href="index.html" aria-label="Go back to home page">← Home</a>
       <button id="btn-play" onclick="togglePlay()">▶ Play</button>
       <button id="btn-prev" onclick="prevPara()">⏮ Prev</button>
       <button id="btn-next" onclick="nextPara()">⏭ Next</button>
       <button id="btn-restart" onclick="restartSection()">↺ Restart</button>
-      <button id="btn-theme" onclick="toggleTheme()" aria-label="Switch between light and dark mode">🌙 Dark</button>
-
-      <div class="control-group">
-        <label class="control-label" for="voice-select">Voice</label>
-        <select id="voice-select" onchange="changeVoice(this.value)">
-          <option value="">Loading US English voices...</option>
-        </select>
-      </div>
-
-      <div class="control-group">
-        <span id="speed-label">Speed: <span id="speed-val">1.0×</span></span>
-        <input type="range" id="speed" min="0.5" max="2.0" step="0.1" value="1.0" oninput="changeSpeed(this.value)">
-      </div>
-
-      <div class="control-group">
-        <label class="control-label" for="pitch">Pitch: <span id="pitch-val">1.0</span></label>
-        <input type="range" id="pitch" min="0.5" max="2.0" step="0.1" value="1.0" oninput="changePitch(this.value)">
-      </div>
-
-      <div class="control-group">
-        <label class="control-label" for="volume">Volume: <span id="volume-val">1.0</span></label>
-        <input type="range" id="volume" min="0" max="1" step="0.1" value="1.0" oninput="changeVolume(this.value)">
-      </div>
-
+      <span id="speed-label">Speed: <span id="speed-val">1.0×</span></span>
+      <input type="range" id="speed" min="0.5" max="2.0" step="0.1" value="1.0" oninput="changeSpeed(this.value)">
       <span id="para-counter" style="font-size:12px;color:#888;margin-left:auto;"></span>
     </div>
     <div id="progress-bar"><div id="progress-fill" style="width:0%"></div></div>
     <div id="content-area">
-      <section id="resume-card" aria-live="polite">
-        <div class="resume-top">
-          <h2>Resume where you left off</h2>
-        </div>
-        <p id="resume-details"></p>
-        <div class="resume-actions">
-          <button type="button" onclick="resumeSavedProgress()">Resume reading</button>
-          <button type="button" class="secondary" onclick="clearSavedProgress()">Clear saved spot</button>
-        </div>
-      </section>
       <div id="section-title"></div>
       <div id="topic-title"></div>
       <div id="content"></div>
@@ -329,18 +240,323 @@ const CONTENT = {
   },
 };
 
+
+const EXTRA_READING = {
+  "Accounting Fundamentals": [
+    {type:"h", text:"Expanded CFE Exam Notes"},
+    {type:"p", text:"For the CFE exam, accounting fundamentals matter because most occupational fraud schemes eventually leave some kind of footprint in books, records, reconciliations, source documents, or exception reports. You do not need to think like a financial statement auditor only; you need to understand how transactions should flow through a normal accounting cycle so you can recognize when the flow is interrupted, bypassed, manually adjusted, or supported by weak documentation."},
+    {type:"p", text:"A useful way to study is to connect each fraud risk to the account it affects. Skimming affects revenue completeness because sales or receipts are never recorded. Larceny affects cash existence because recorded cash is missing. Fictitious revenue affects revenue occurrence and accounts receivable existence. Capitalizing expenses affects expense completeness and asset valuation. This account-level thinking makes red flags easier to remember and helps you choose the right investigative test."},
+    {type:"p", text:"Internal controls should also be studied as practical barriers, not just definitions. Authorization controls decide who may approve a transaction. Custody controls decide who can access assets. Recording controls decide who can create or change accounting records. Reconciliation controls compare independent records and expose differences. Monitoring controls look for unusual activity over time. Fraud risk rises sharply when one person can authorize, record, possess, and reconcile the same transaction stream."},
+    {type:"p", text:"Many exam questions test whether you can identify the best control for a specific weakness. If cash receipts are stolen before recording, stronger bank reconciliation alone may not detect the scheme because the receipt was never booked. Better controls may include prenumbered receipts, customer receipt confirmations, surveillance, independent comparison of sales to inventory movement, and review of customer complaints. Always match the control to the point where the fraud occurs."}
+  ],
+  "Asset Misappropriation": [
+    {type:"h", text:"Expanded CFE Exam Notes"},
+    {type:"p", text:"Asset misappropriation questions often require you to distinguish the point of theft from the method of concealment. Skimming happens before recording, while cash larceny happens after recording. Billing schemes abuse the disbursement process. Payroll schemes abuse employee master files, timekeeping, pay rates, or commission calculations. Inventory schemes abuse physical access, shipping, receiving, or write-off processes."},
+    {type:"p", text:"When studying cash schemes, remember that the most effective detection procedures depend on whether the cash was recorded. For skimming, there may be no book shortage, so indirect evidence becomes important: declining gross margins, inventory shrinkage, customer complaints, missing register transactions, or lower-than-expected cash sales. For larceny, book-to-bank and book-to-cash comparisons are more useful because the money was recorded but removed later."},
+    {type:"p", text:"Billing schemes are common because invoice processing can look routine. A shell company scheme usually requires three things: a vendor record, an invoice, and approval for payment. Therefore, prevention focuses on vendor due diligence, segregation of vendor setup from payment approval, three-way matching, conflict checks against employee data, and review of invoices with vague descriptions such as consulting, services rendered, or special project work."},
+    {type:"p", text:"Payroll fraud can continue for long periods when HR, payroll, and supervision do not reconcile their records. Strong procedures include independent review of new hires, prompt removal of terminated employees, supervisor certification of time worked, comparison of payroll to active employee rosters, and investigation of duplicate bank accounts, addresses, Social Security numbers, or tax identification data."}
+  ],
+  "Financial Statement Fraud": [
+    {type:"h", text:"Expanded CFE Exam Notes"},
+    {type:"p", text:"Financial statement fraud differs from many asset theft schemes because the primary beneficiary is often the organization, management team, or stock price rather than a single employee stealing cash. The fraud usually involves pressure to meet targets, preserve financing, satisfy debt covenants, support executive compensation, or hide poor operating results. Because management can override controls, professional skepticism is especially important."},
+    {type:"p", text:"Revenue recognition is heavily tested because it directly affects performance. Be alert for sales recorded before delivery, sales without persuasive evidence of an arrangement, bill-and-hold transactions without legitimate business purpose, side agreements granting rights of return, channel stuffing, and round-trip transactions. A useful investigative step is to trace recorded revenue to customer orders, shipping evidence, subsequent cash receipts, and customer confirmations."},
+    {type:"p", text:"Expense manipulation frequently involves timing. If expenses are improperly capitalized, current income is overstated and assets are inflated. If liabilities are omitted, expenses are understated and solvency ratios appear stronger. Detection may involve searching for unrecorded liabilities, reviewing post-period disbursements, testing manual journal entries, comparing margins to industry patterns, and evaluating whether management estimates changed without economic justification."},
+    {type:"p", text:"Disclosures are part of the financial statements. A company can mislead users even when the numbers appear mathematically accurate if it omits related-party transactions, contingent liabilities, guarantees, significant risks, changes in accounting methods, or side agreements. Fraud examiners should treat missing or misleading disclosures as potential evidence, not as minor presentation issues."}
+  ],
+  "Corruption & Other Schemes": [
+    {type:"h", text:"Expanded CFE Exam Notes"},
+    {type:"p", text:"Corruption schemes are built around abuse of influence. Unlike simple theft, the transaction may appear legitimate because goods are delivered, services are performed, or contracts are awarded. The fraud is in the hidden benefit, biased decision-making, inflated price, inferior quality, or undisclosed relationship. This is why conflict-of-interest disclosures, vendor transparency, and competitive bidding controls are so important."},
+    {type:"p", text:"Bribery, illegal gratuities, economic extortion, and conflicts of interest are related but distinct. A bribe is intended to influence a decision. An illegal gratuity rewards a decision after the fact. Economic extortion involves demanding payment through pressure or authority. A conflict of interest involves an undisclosed personal interest that could compromise judgment. Exam questions often test which label best fits the facts."},
+    {type:"p", text:"Cyber-enabled fraud frequently combines technical access with social engineering. Business email compromise is not just a technology problem; it exploits urgency, authority, secrecy, and weak payment-change controls. Strong prevention includes callback verification using known contact information, dual approval for wire transfers, employee training, email security, and monitoring of vendor bank-account changes."},
+    {type:"p", text:"For international corruption, books-and-records controls matter because bribes are rarely recorded as bribes. They may be disguised as consulting fees, commissions, travel expenses, charitable donations, facilitation costs, or marketing expenses. A fraud examiner should look for vague descriptions, payments to intermediaries, high-risk jurisdictions, unusual commission rates, and lack of evidence that services were actually performed."}
+  ],
+  "Investigation Principles": [
+    {type:"h", text:"Expanded CFE Exam Notes"},
+    {type:"p", text:"A fraud examination should be planned around a clear allegation or predicate. The examiner should define the suspected scheme, identify likely records, preserve evidence, determine who may have knowledge, and consider legal or confidentiality constraints. Planning is not meant to lock the examiner into a conclusion; it provides an organized path while allowing the fraud theory to change as evidence develops."},
+    {type:"p", text:"The movement from least invasive to most invasive procedures protects the investigation. Documents, public records, and data analytics can be reviewed before suspects know an investigation exists. Interviews normally begin with neutral witnesses, then move to corroborating witnesses, and only later to subjects. This sequencing reduces the risk of evidence destruction, witness coordination, and premature accusations."},
+    {type:"p", text:"Chain of custody is not only a courtroom concept; it is a discipline for maintaining credibility. Evidence should be identified, collected lawfully, labeled, stored securely, and documented each time it changes hands. For digital evidence, forensic images and hash values help prove that the evidence analyzed is the same evidence collected and that it has not been altered."},
+    {type:"p", text:"Fraud examiners should distinguish facts, inferences, and opinions. A bank record showing a transfer is a fact. Concluding that the transfer was intended to conceal proceeds may be an inference supported by timing, parties, and surrounding evidence. Expert opinions must be based on reliable methods. Clear separation of these categories makes reports stronger and reduces legal risk."}
+  ],
+  "Interview Techniques": [
+    {type:"h", text:"Expanded CFE Exam Notes"},
+    {type:"p", text:"Effective interviews are structured conversations, not casual chats. The examiner should prepare objectives, review known facts, decide what documents to use, and plan a sequence of open-ended and follow-up questions. Early questions should encourage a narrative. Later questions can clarify dates, amounts, people, documents, and inconsistencies."},
+    {type:"p", text:"Rapport is not friendliness for its own sake; it is a professional tool for reducing anxiety and encouraging accurate recall. A respectful tone, clear explanation of the interview purpose, and nonjudgmental listening can produce more information than aggressive questioning. This is especially important with witnesses who fear retaliation or believe they may be blamed."},
+    {type:"p", text:"Admission-seeking interviews should not be conducted until the examiner has enough evidence to understand the likely scheme and challenge false explanations. Even then, the goal is reliable information, not a confession at any cost. Coercive tactics, promises, threats, and misleading statements can create legal problems and undermine the credibility of the result."},
+    {type:"p", text:"Statement analysis should be used cautiously. Language cues may identify areas for follow-up, but they do not prove deception by themselves. Changes in pronouns, missing time, passive voice, or excessive irrelevant detail should prompt corroboration through documents, data, other witnesses, and physical evidence."}
+  ],
+  "Legal Framework": [
+    {type:"h", text:"Expanded CFE Exam Notes"},
+    {type:"p", text:"Legal issues on the CFE exam often focus on elements, evidence, privileges, and rights. Fraud generally requires a false representation or concealment of a material fact, knowledge of falsity, intent to deceive, reliance by the victim, and damages. Criminal fraud also requires proof beyond a reasonable doubt, while civil fraud usually uses a lower burden such as preponderance or clear and convincing evidence depending on the jurisdiction."},
+    {type:"p", text:"Mail and wire fraud are broad because the communication does not need to be the fraudulent statement itself; it only needs to be used in furtherance of the scheme. Emails, wires, phone calls, electronic filings, mailed invoices, or mailed checks can create federal jurisdiction if the other elements are present."},
+    {type:"p", text:"Evidence rules matter because a fact is only useful in court if it can be admitted and explained. Business records may qualify under a hearsay exception when made at or near the time by someone with knowledge and kept in the regular course of business. Authentication shows that a document is what it claims to be. Relevance connects the evidence to a fact of consequence."},
+    {type:"p", text:"Privilege must be handled carefully. Attorney-client privilege protects confidential legal communications, while work product protects materials prepared in anticipation of litigation. These protections can be waived by disclosure to outsiders, and they generally do not protect communications made to further a crime or fraud. Fraud examiners working under counsel should understand who the client is and how reports will be distributed."}
+  ],
+  "Criminology & Fraud Theory": [
+    {type:"h", text:"Expanded CFE Exam Notes"},
+    {type:"p", text:"Fraud theory helps explain why controls and ethics programs matter. The Fraud Triangle emphasizes pressure, opportunity, and rationalization. The Fraud Diamond adds capability, recognizing that a person also needs the skills, access, confidence, and ability to manage stress to carry out and conceal a fraud. These models are not excuses for fraud; they are tools for risk assessment."},
+    {type:"p", text:"Pressure can be personal or organizational. Personal pressure may include debt, addiction, family obligations, or lifestyle expectations. Organizational pressure may include earnings targets, budget demands, sales quotas, or fear of failure. CFE questions often ask which element is most directly reduced by a specific control; most controls reduce opportunity, while culture and training may affect rationalization."},
+    {type:"p", text:"White-collar crime research shows that fraud can occur in respectable environments and may be learned or normalized within organizations. Employees may copy behavior they see rewarded or tolerated. If small policy violations are ignored, larger misconduct becomes easier to rationalize. This is why consistent discipline and tone in the middle are as important as tone at the top."},
+    {type:"p", text:"Behavioral red flags are indicators, not proof. Living beyond one's means, financial difficulty, excessive control over duties, unusual defensiveness, or close vendor relationships should lead to inquiry and control review. They should not be treated as evidence of guilt without corroborating facts."}
+  ],
+  "Corporate Governance & Prevention": [
+    {type:"h", text:"Expanded CFE Exam Notes"},
+    {type:"p", text:"Corporate governance is the system that directs and controls the organization. The board and audit committee provide oversight, management owns the design and operation of controls, internal audit provides independent assurance, and employees operate within the control environment. Fraud prevention fails when these roles are unclear or when management can dominate oversight."},
+    {type:"p", text:"Hotlines are effective because many frauds are detected by tips. A hotline should allow anonymity where legally permitted, protect reporters from retaliation, route serious allegations to independent reviewers, and provide tracking to ensure follow-up. A hotline that employees do not trust may exist on paper but fail in practice."},
+    {type:"p", text:"Fraud risk assessments should identify specific schemes, not just broad risks. Instead of saying accounts payable fraud is possible, the assessment should consider shell vendors, duplicate payments, changed bank accounts, pass-through billing, conflicts of interest, and inflated invoices. Each scheme should be mapped to preventive and detective controls."},
+    {type:"p", text:"Monitoring makes controls sustainable. Reconciliations, exception reports, access reviews, vendor master file reviews, and management dashboards help detect when controls are not working. Remediation tracking is important because identifying a weakness without fixing it leaves the organization exposed and may create evidence that management knew of the risk."}
+  ],
+  "Ethics & Professional Standards": [
+    {type:"h", text:"Expanded CFE Exam Notes"},
+    {type:"p", text:"Professional ethics are central to the CFE role because fraud examinations can damage reputations, affect employment, and lead to legal proceedings. Honesty requires truthful reporting. Objectivity requires following evidence rather than client preference. Competence requires recognizing when specialized legal, forensic technology, valuation, or industry expertise is needed. Confidentiality requires careful handling of sensitive information."},
+    {type:"p", text:"Objectivity is tested when the engaging party has a desired outcome. A fraud examiner should avoid overstating conclusions, ignoring exculpatory evidence, or using language that suggests guilt before sufficient evidence exists. Reports should identify the scope of work, procedures performed, evidence reviewed, limitations, findings, and basis for conclusions."},
+    {type:"p", text:"Confidentiality does not mean secrecy from all parties forever. It means information should be shared only with authorized individuals and for legitimate purposes. Distribution of reports should be controlled because unnecessary disclosure can create defamation risk, waive privilege, alert suspects, or expose the organization to privacy concerns."},
+    {type:"p", text:"Legal liability is reduced by careful planning, documentation, professional skepticism, and fair treatment of subjects and witnesses. Workpapers should show what was done, when it was done, what evidence was reviewed, and why conclusions were reached. Good documentation is often the examiner's strongest defense if the work is later challenged."}
+  ]
+};
+
+
+const BEGINNER_READING = {
+  "Accounting Fundamentals": [
+    {type:"h", text:"Beginner Deep Dive: How Accounting Connects to Fraud"},
+    {type:"sub", text:"Start with the purpose of accounting"},
+    {type:"p", text:"Accounting is a structured way to tell the financial story of an organization. It records what the organization owns, what it owes, what it earned, what it spent, and how money moved. Fraud examiners study accounting because most business fraud either appears in accounting records, is hidden by accounting records, or is discovered when accounting records do not match reality."},
+    {type:"p", text:"For the CFE exam, do not think of accounting as only debits and credits. Think of it as evidence. A sales invoice, deposit record, purchase order, receiving report, vendor invoice, payroll record, journal entry, and bank reconciliation can each become evidence showing whether a transaction was real, authorized, complete, and properly recorded."},
+    {type:"sub", text:"The three statements in plain language"},
+    {type:"p", text:"The income statement answers: Did the organization appear profitable during the period? The balance sheet answers: What did the organization claim to own and owe at a point in time? The cash flow statement answers: Where did actual cash come from and where did it go? Fraud exam questions often ask you to connect a scheme to the statement it affects."},
+    {type:"p", text:"A simple example helps: if a company records a fake sale on credit, revenue goes up on the income statement and accounts receivable goes up on the balance sheet. But no cash comes in. That is why a company with growing revenue and growing receivables but weak cash collections deserves scrutiny."},
+    {type:"sub", text:"Debits and credits without fear"},
+    {type:"p", text:"You do not need to become an accountant to pass the CFE, but you should understand the logic. A debit or credit is not automatically good or bad. It depends on the account. Assets and expenses generally increase with debits. Liabilities, equity, and revenue generally increase with credits. Fraudsters exploit this by placing false entries in accounts that make performance look better."},
+    {type:"p", text:"For example, if an expense is improperly capitalized, the debit goes to an asset account instead of an expense account. That means current expenses look lower and income looks higher. The fraud may not affect cash immediately, but it changes how performance appears."},
+    {type:"sub", text:"Assertions fraud examiners care about"},
+    {type:"p", text:"Financial statement assertions are exam-friendly because they help you organize evidence. Occurrence asks whether recorded transactions actually happened. Completeness asks whether all real transactions were recorded. Accuracy asks whether amounts are correct. Cutoff asks whether transactions were recorded in the proper period. Classification asks whether items were recorded in the right account."},
+    {type:"p", text:"Different frauds attack different assertions. Fictitious revenue attacks occurrence. Unrecorded liabilities attack completeness. Premature revenue recognition attacks cutoff. Capitalizing operating expenses attacks classification and accuracy. Inventory overstatement attacks existence and valuation."},
+    {type:"sub", text:"Internal controls for beginners"},
+    {type:"p", text:"Controls are not just paperwork. They are the rules, approvals, system settings, reconciliations, reviews, and physical safeguards that make fraud harder to commit or easier to detect. Preventive controls stop something before it happens. Detective controls reveal that something happened. Corrective controls fix the problem after discovery."},
+    {type:"p", text:"A beginner mistake is thinking one control solves everything. In reality, controls work in layers. A purchase may require an approved vendor, purchase order, receiving report, invoice approval, three-way match, payment approval, and bank reconciliation. If one control fails, another may still detect the problem."},
+    {type:"callout", text:"Exam tip: When you see a question about one employee authorizing, recording, and handling assets, think segregation of duties. When you see unexplained differences between records and independent evidence, think reconciliation and documentation."}
+  ],
+  "Asset Misappropriation": [
+    {type:"h", text:"Beginner Deep Dive: Asset Misappropriation"},
+    {type:"sub", text:"What makes asset misappropriation different"},
+    {type:"p", text:"Asset misappropriation is the theft or misuse of an organization's resources. It is usually committed by employees or insiders who already have some level of access. The key idea is that the organization owns the asset, but the fraudster converts it for personal benefit."},
+    {type:"p", text:"The CFE exam often tests whether you can identify when the theft happens. Skimming happens before the money is recorded. Cash larceny happens after the money is recorded. Fraudulent disbursements happen when the organization is tricked into sending money out. Non-cash theft involves inventory, supplies, equipment, or information."},
+    {type:"sub", text:"Skimming step by step"},
+    {type:"p", text:"In skimming, the customer pays, but the organization never records the payment properly. Because the transaction is missing from the books, there may be no obvious cash shortage. That is why skimming is often detected by indirect evidence, such as customer complaints, inventory shortages, lower-than-expected sales, or unusual voids and discounts."},
+    {type:"p", text:"Receivables skimming is more complicated because the customer expects their account to be credited. The fraudster may use lapping, false credits, write-offs, or account adjustments to hide the missing payment. The examiner should compare payment dates, deposit dates, posting dates, and customer account histories."},
+    {type:"sub", text:"Cash larceny step by step"},
+    {type:"p", text:"In cash larceny, the cash was recorded first, then stolen. This creates a book-to-actual difference. For example, the register says $1,000 should be in the drawer, but only $900 is present. Because the records show the money should exist, larceny often leaves a clearer accounting trail than skimming."},
+    {type:"p", text:"Common concealment methods include false voids, false refunds, altered deposit slips, missing cash counts, and unsupported journal entries. A strong response is independent cash counts, deposit reconciliation, register exception reports, and camera review where appropriate."},
+    {type:"sub", text:"Billing schemes in plain language"},
+    {type:"p", text:"Billing fraud means the organization pays money it should not pay. Shell companies are fake vendors controlled by the fraudster. Pass-through vendors add no value but mark up goods. Personal purchases involve using company funds for personal benefit. Duplicate payment schemes rely on paying the same or similar invoice more than once."},
+    {type:"p", text:"Controls for billing schemes include approved vendor setup, vendor master file review, employee-vendor matching, three-way matching, invoice approval, duplicate payment testing, and independent review of vendor bank account changes."},
+    {type:"sub", text:"Payroll and expense schemes"},
+    {type:"p", text:"Payroll fraud can involve ghost employees, falsified hours, unauthorized pay rates, commission manipulation, or improper bonuses. The best evidence often comes from comparing HR records, payroll records, supervisor approvals, timekeeping data, system access logs, and physical observation."},
+    {type:"p", text:"Expense reimbursement fraud usually involves fake receipts, inflated expenses, duplicate submissions, personal expenses labeled as business, or mileage exaggeration. The examiner should look for round-dollar claims, weekend claims, repeated vendors, missing receipts, and expenses inconsistent with the employee's role."},
+    {type:"callout", text:"Exam tip: First identify the asset, then identify the point of theft, then identify the concealment method, then choose a control that addresses that specific point."}
+  ],
+  "Financial Statement Fraud": [
+    {type:"h", text:"Beginner Deep Dive: Financial Statement Fraud"},
+    {type:"sub", text:"Why this fraud is different"},
+    {type:"p", text:"Financial statement fraud is usually designed to make the organization look healthier than it really is. It may help executives meet targets, increase stock prices, satisfy lenders, obtain bonuses, hide poor performance, or avoid covenant violations. Unlike a simple theft, the benefit may be indirect."},
+    {type:"p", text:"The exam frequently contrasts frequency and loss. Asset misappropriation happens more often, but financial statement fraud usually causes larger losses because it can mislead investors, lenders, regulators, employees, and the market for a long time."},
+    {type:"sub", text:"Revenue schemes"},
+    {type:"p", text:"Revenue is a common target because it is a major measure of success. Fraudsters may record sales that never happened, record sales too early, hide side agreements, ship goods that the customer did not really order, or record round-trip transactions with no business substance."},
+    {type:"p", text:"A beginner should connect revenue fraud to evidence. Real revenue usually has a customer order, approval, shipment or service delivery, invoice, collection, and no secret right of return. If documents exist but cash never arrives, receivables grow, or sales reverse after period-end, the examiner should ask whether the revenue was real and earned."},
+    {type:"sub", text:"Expense and liability schemes"},
+    {type:"p", text:"Understating expenses makes income look higher. One method is to capitalize expenses as assets. Another is to delay recording invoices until the next period. Another is to omit liabilities entirely. These schemes often improve net income, working capital, and debt covenant ratios."},
+    {type:"p", text:"To detect concealed expenses and liabilities, examiners look at payments after year-end, unmatched receiving reports, vendor statements, legal letters, board minutes, and recurring expenses that suddenly disappear. The question is: did the company receive goods or services or incur obligations that were not recorded?"},
+    {type:"sub", text:"Asset valuation schemes"},
+    {type:"p", text:"Overstated assets can make a company look stronger. Inventory may be counted twice, valued too high, or not written down when obsolete. Receivables may include fake customers or balances that will not be collected. Fixed assets may include costs that should have been expensed."},
+    {type:"p", text:"Valuation is an exam theme because fraud can hide inside estimates. Estimates require judgment, and judgment can be abused. Bad debt reserves, warranty reserves, impairment estimates, percentage-of-completion estimates, and inventory obsolescence allowances all require professional skepticism."},
+    {type:"sub", text:"Journal entries and management override"},
+    {type:"p", text:"Management override means leaders use authority to bypass normal controls. This is dangerous because senior personnel can pressure staff, approve unusual entries, or create top-side adjustments after normal processing is complete. Even strong systems can fail when management can override them without independent review."},
+    {type:"p", text:"Red flags include entries posted late at night, at period end, by unusual users, with vague descriptions, to unusual account combinations, for round amounts, or without support. The examiner should trace entries to evidence and ask whether the business purpose is legitimate."},
+    {type:"callout", text:"Exam tip: If a scenario involves making financial results look better, think revenue overstatement, expense understatement, asset overstatement, liability understatement, disclosure omission, or management override."}
+  ],
+  "Corruption & Other Schemes": [
+    {type:"h", text:"Beginner Deep Dive: Corruption and Cyber-Enabled Fraud"},
+    {type:"sub", text:"The core idea of corruption"},
+    {type:"p", text:"Corruption occurs when someone abuses entrusted power in a business transaction for personal benefit. The organization may still receive goods or services, but the decision was corrupted. This makes corruption different from simple theft: the harm is often hidden in inflated prices, poor quality, unfair vendor selection, or regulatory exposure."},
+    {type:"p", text:"The main forms are bribery, kickbacks, conflicts of interest, illegal gratuities, and economic extortion. Bribery and kickbacks involve something of value influencing a decision. Conflicts of interest involve undisclosed personal interests. Economic extortion involves demanding payment through pressure or authority."},
+    {type:"sub", text:"Vendor and procurement corruption"},
+    {type:"p", text:"Procurement is high risk because employees choose vendors, approve prices, confirm receipt, and influence payment. A corrupt employee may steer work to a favored vendor, leak bid information, split purchases to avoid approval thresholds, accept gifts, or approve inflated invoices."},
+    {type:"p", text:"Useful evidence includes bid files, vendor ownership records, employee disclosures, email communications, pricing comparisons, approval histories, and relationships between employees and vendors. Data matching can reveal shared addresses, phone numbers, bank accounts, or tax IDs."},
+    {type:"sub", text:"International bribery"},
+    {type:"p", text:"International corruption risk increases when companies use agents, consultants, distributors, customs brokers, or intermediaries. Payments may be disguised as commissions, consulting fees, marketing expenses, charitable donations, travel, gifts, or facilitation-type expenses."},
+    {type:"p", text:"Controls include third-party due diligence, contract anti-bribery clauses, approval of gifts and entertainment, payment review, books-and-records controls, and monitoring of high-risk countries and intermediaries. The CFE exam may test both the payment itself and the false accounting used to hide it."},
+    {type:"sub", text:"Cyber-enabled fraud"},
+    {type:"p", text:"Cyber-enabled fraud uses technology to commit or conceal deception. Business email compromise is a common example. The attacker impersonates an executive, vendor, or trusted party and pressures an employee to send money, change bank details, or disclose sensitive information."},
+    {type:"p", text:"The strongest control for payment redirection is independent verification using a trusted contact method already on file. Employees should not rely on phone numbers or links in the suspicious message. Other controls include multi-factor authentication, email filtering, payment approval workflows, and security awareness training."},
+    {type:"callout", text:"Exam tip: Corruption questions often ask who had an undisclosed interest, what thing of value was exchanged, how the decision was influenced, and which control would expose the relationship."}
+  ],
+  "Investigation Principles": [
+    {type:"h", text:"Beginner Deep Dive: Investigation Principles"},
+    {type:"sub", text:"What a fraud examination is trying to answer"},
+    {type:"p", text:"A fraud examination is not just a search for suspicious facts. It is a structured process for answering whether fraud occurred, who was involved, how it happened, how much was lost, what evidence supports the conclusion, and what should be done next."},
+    {type:"p", text:"The examiner should begin with a clear allegation or predicate. A vague feeling that something is wrong is not enough. Predicate can come from a tip, unusual transaction, audit finding, missing asset, customer complaint, data anomaly, or other specific fact that justifies inquiry."},
+    {type:"sub", text:"Planning the investigation"},
+    {type:"p", text:"Planning includes defining scope, identifying records, preserving evidence, deciding who should be involved, considering legal privilege, assessing conflicts of interest, and sequencing procedures. Good planning prevents the examiner from alerting suspects too early or collecting evidence in a way that cannot be used later."},
+    {type:"p", text:"A useful plan asks: What scheme is suspected? What records should exist if the scheme happened? Who had access? Who approved transactions? Where would the money or asset go? What controls should have operated? Who can explain the process?"},
+    {type:"sub", text:"Evidence basics"},
+    {type:"p", text:"Evidence can be documentary, testimonial, physical, or digital. Documentary evidence includes invoices, contracts, emails, bank records, payroll reports, and accounting entries. Testimonial evidence comes from interviews. Digital evidence includes metadata, logs, access records, and recovered files. Physical evidence includes original documents, devices, or assets."},
+    {type:"p", text:"The strength of evidence improves when sources corroborate each other. An invoice alone may not prove goods were received. But an invoice, purchase order, receiving report, shipping record, payment record, and employee admission together create a much stronger picture."},
+    {type:"sub", text:"Chain of custody and preservation"},
+    {type:"p", text:"Chain of custody is the record of who collected, handled, stored, transferred, and analyzed evidence. It matters because evidence can be challenged if someone cannot show it was protected from alteration. Digital evidence should be preserved through forensic methods when possible, especially when litigation or criminal referral is possible."},
+    {type:"p", text:"Preservation also means stopping routine destruction. A litigation hold may be needed so emails, chat messages, accounting records, security footage, and device data are not deleted. Delay can cause important evidence to disappear."},
+    {type:"sub", text:"From theory to conclusion"},
+    {type:"p", text:"Fraud theories are working explanations, not final answers. The examiner may begin with a theory such as shell company billing, then test it against evidence. If evidence contradicts the theory, the theory must change. This protects objectivity and reduces confirmation bias."},
+    {type:"callout", text:"Exam tip: In investigation questions, choose the answer that preserves evidence, maintains objectivity, starts with less intrusive steps, and avoids premature accusations."}
+  ],
+  "Interview Techniques": [
+    {type:"h", text:"Beginner Deep Dive: Interview Techniques"},
+    {type:"sub", text:"Why interviews matter"},
+    {type:"p", text:"Documents show what was recorded, but people explain how processes work, why exceptions occurred, who had access, and what was not documented. Interviews help identify witnesses, clarify records, test explanations, and sometimes obtain admissions."},
+    {type:"p", text:"The CFE exam often tests interview sequence. Start with neutral third-party or background witnesses, then knowledgeable employees, then subjects or suspects after enough evidence has been gathered. This reduces the chance of alerting the subject before the examiner understands the facts."},
+    {type:"sub", text:"Question types"},
+    {type:"p", text:"Open-ended questions invite a narrative: 'Tell me what happened.' They are useful because they let the interviewee provide information in their own words. Closed-ended questions ask for specific facts: 'Who approved the invoice?' They are useful after the examiner has the broad story."},
+    {type:"p", text:"Leading questions suggest the answer and should be used carefully. A question like 'You knew the invoice was fake, right?' may contaminate the response and appear unfair. Better questions ask for facts first, then confront contradictions only when appropriate."},
+    {type:"sub", text:"Rapport and listening"},
+    {type:"p", text:"Rapport does not mean being casual or manipulative. It means creating a professional environment where the person understands the purpose of the interview and feels able to speak. Good interviewers listen more than they talk, avoid unnecessary interruptions, and document important statements accurately."},
+    {type:"p", text:"Silence can be useful. After asking an important question, allow the person time to answer. People often provide more detail when the interviewer does not rush to fill the silence. Follow-up questions should clarify who, what, when, where, why, and how."},
+    {type:"sub", text:"Admission-seeking interviews"},
+    {type:"p", text:"An admission-seeking interview should not be the first step. It occurs when the examiner has enough evidence to confront the subject fairly. The goal is truthful information, not a forced confession. Coercion, threats, promises, or deceptive statements can create legal and ethical problems."},
+    {type:"p", text:"A good admission statement should be voluntary, specific, accurate, and corroborated. It should identify what happened, when, how, why, who was involved, and what documents or transactions support the admission. A confession without supporting evidence is weaker than a statement supported by records."},
+    {type:"sub", text:"Evaluating deception carefully"},
+    {type:"p", text:"No single behavior proves lying. Nervousness, lack of eye contact, or hesitation may result from stress rather than deception. Statement analysis and behavioral observations are leads for follow-up, not proof. The examiner should compare statements to documents, data, and other witnesses."},
+    {type:"callout", text:"Exam tip: When choosing an interview answer, favor open-ended questions early, specific questions later, neutral witnesses before suspects, and corroboration before conclusions."}
+  ],
+  "Legal Framework": [
+    {type:"h", text:"Beginner Deep Dive: Legal Framework"},
+    {type:"sub", text:"Civil, criminal, and internal matters"},
+    {type:"p", text:"Fraud can lead to internal discipline, civil lawsuits, regulatory actions, or criminal prosecution. Internal discipline focuses on employment consequences. Civil cases focus on money, injunctions, restitution, or rescission. Criminal cases focus on punishment by the government."},
+    {type:"p", text:"The burden of proof differs. Criminal cases require proof beyond a reasonable doubt. Civil cases usually require preponderance of the evidence, and some fraud claims may require clear and convincing evidence. A CFE should understand these standards but should not provide legal advice unless qualified to do so."},
+    {type:"sub", text:"Elements of fraud"},
+    {type:"p", text:"Many fraud claims include a false statement or concealment, knowledge of falsity, intent to induce reliance, actual reliance, causation, and damages. Criminal fraud also requires the required mental state, often intent to defraud."},
+    {type:"p", text:"Intent is often proven indirectly. A person rarely writes, 'I intend to commit fraud.' Instead, intent may be inferred from concealment, false documents, repeated conduct, personal benefit, inconsistent explanations, destruction of evidence, or efforts to bypass controls."},
+    {type:"sub", text:"Evidence rules in plain language"},
+    {type:"p", text:"Relevance means evidence helps prove or disprove something important. Authentication means showing evidence is what it claims to be. Hearsay rules limit certain out-of-court statements, but business records often have an exception when made in the regular course of business."},
+    {type:"p", text:"The best evidence rule matters when the contents of a document are at issue. Originals are preferred, but duplicates are often acceptable unless authenticity is seriously disputed. Fraud examiners should preserve originals when possible and document how copies were obtained."},
+    {type:"sub", text:"Privilege and work product"},
+    {type:"p", text:"Attorney-client privilege protects confidential communications for legal advice. Work product protects materials prepared in anticipation of litigation. When a fraud examiner works under counsel, some work may be protected, but privilege can be waived if information is shared too broadly."},
+    {type:"p", text:"The crime-fraud exception means privilege does not protect communications made to further a crime or fraud. Also, privilege generally protects communications, not the underlying facts. A CFE should coordinate with counsel when privilege is important."},
+    {type:"sub", text:"Common statutes"},
+    {type:"p", text:"Mail fraud and wire fraud are broad because many schemes use mail, email, phone, wires, or internet communications. The False Claims Act addresses fraud against the government. The Bank Secrecy Act and anti-money laundering rules address suspicious financial activity. SOX and Dodd-Frank include public company and whistleblower provisions."},
+    {type:"callout", text:"Exam tip: If the question asks what a CFE should do legally, the safest answer is often to preserve evidence, document facts, and consult counsel rather than make legal conclusions alone."}
+  ],
+  "Criminology & Fraud Theory": [
+    {type:"h", text:"Beginner Deep Dive: Fraud Theory"},
+    {type:"sub", text:"Why people commit fraud"},
+    {type:"p", text:"Fraud theory helps explain conditions that make fraud more likely. It does not excuse misconduct, and it does not prove that a specific person committed fraud. It gives examiners a framework for understanding pressure, opportunity, rationalization, capability, and organizational culture."},
+    {type:"p", text:"The Fraud Triangle is the foundation: pressure, opportunity, and rationalization. Pressure motivates. Opportunity enables. Rationalization justifies. Organizations have the most control over opportunity, which is why internal controls are so important."},
+    {type:"sub", text:"Pressure"},
+    {type:"p", text:"Pressure can be personal or organizational. Personal pressures include debt, addiction, medical expenses, divorce, or lifestyle demands. Organizational pressures include unrealistic targets, fear of missing earnings expectations, pressure from supervisors, or compensation tied to financial metrics."},
+    {type:"p", text:"A key word is non-shareable. Cressey's research emphasized that fraudsters often perceive the problem as something they cannot admit or discuss. They may feel trapped and look for a secret solution."},
+    {type:"sub", text:"Opportunity"},
+    {type:"p", text:"Opportunity is created by access, weak controls, poor oversight, excessive trust, management override, lack of segregation, or poor monitoring. A person under pressure may not commit fraud if they believe the chance of detection is high."},
+    {type:"p", text:"Controls reduce opportunity by making unauthorized actions harder, requiring independent review, creating evidence, or increasing the likelihood of detection. Mandatory vacations, job rotation, reconciliations, system access reviews, and surprise audits all affect perceived opportunity."},
+    {type:"sub", text:"Rationalization and capability"},
+    {type:"p", text:"Rationalization allows the fraudster to see themselves as justified: 'I will pay it back,' 'I deserve it,' 'They underpay me,' or 'Everyone does it.' Ethical culture and consistent discipline make rationalization harder."},
+    {type:"p", text:"The Fraud Diamond adds capability. A person may have pressure, opportunity, and rationalization but still lack the skill, position, confidence, or stress tolerance to carry out a complex fraud. Capability is especially important in management fraud and cyber-enabled schemes."},
+    {type:"sub", text:"Culture and normalization"},
+    {type:"p", text:"White-collar crime is influenced by culture. If small violations are ignored, employees may learn that rules are flexible. Over time, unethical behavior can become normalized. Tone at the top, tone in the middle, and fair enforcement help prevent this slide."},
+    {type:"callout", text:"Exam tip: Fraud theory questions are usually asking you to identify which element is present or which control would reduce opportunity."}
+  ],
+  "Corporate Governance & Prevention": [
+    {type:"h", text:"Beginner Deep Dive: Governance and Prevention"},
+    {type:"sub", text:"Who is responsible for fraud prevention"},
+    {type:"p", text:"Fraud prevention is not only the job of internal audit. The board oversees risk. The audit committee oversees financial reporting and investigations. Management designs and operates controls. Employees follow policies and report concerns. Internal audit provides independent assurance. Compliance and legal functions support policy, training, and investigations."},
+    {type:"p", text:"When these roles are unclear, fraud risk increases. For example, if management investigates allegations against itself without independent oversight, employees may not trust the process and evidence may not be preserved properly."},
+    {type:"sub", text:"Tone at the top and tone in the middle"},
+    {type:"p", text:"Tone at the top is leadership's example. Tone in the middle is what supervisors actually reinforce day to day. Employees often follow the behavior their direct manager rewards. A company can have a beautiful code of ethics but still have a weak culture if managers pressure staff to ignore controls."},
+    {type:"p", text:"Consistent discipline matters. If senior employees avoid consequences while lower-level employees are punished, the organization creates rationalizations for future misconduct. Fairness is a fraud deterrence tool."},
+    {type:"sub", text:"Fraud risk assessment"},
+    {type:"p", text:"A fraud risk assessment should be practical and scheme-based. Instead of saying 'cash fraud could occur,' list specific schemes: skimming, cash larceny, deposit theft, false refunds, void manipulation, and register theft. Then identify who could do it, what controls exist, and what evidence would show failure."},
+    {type:"p", text:"Risk is usually evaluated by likelihood and impact. A rare but catastrophic risk may deserve strong controls. A frequent low-dollar risk may deserve automated monitoring. The best assessments lead to action, not just a report."},
+    {type:"sub", text:"Hotlines and reporting"},
+    {type:"p", text:"Tips are a leading detection method because employees and vendors often see problems before auditors do. A hotline should be easy to use, allow anonymous reporting where permitted, protect against retaliation, and route serious complaints to independent reviewers."},
+    {type:"p", text:"A hotline is only effective if people trust it. If reporters are ignored or punished, employees will stop reporting. Tracking allegations, documenting follow-up, and reporting trends to the audit committee strengthen the program."},
+    {type:"sub", text:"Preventive and detective controls"},
+    {type:"p", text:"Preventive controls include approvals, access limits, segregation of duties, vendor due diligence, and required documentation. Detective controls include reconciliations, exception reports, audits, variance analysis, and hotline investigations. Both are needed."},
+    {type:"p", text:"Small organizations may not have enough staff for perfect segregation. They need compensating controls, such as owner review, bank statement review by someone outside cash handling, external bookkeeping support, or system reports reviewed by management."},
+    {type:"callout", text:"Exam tip: Governance answers usually favor independence, oversight, documentation, non-retaliation, timely investigation, and remediation tracking."}
+  ],
+  "Ethics & Professional Standards": [
+    {type:"h", text:"Beginner Deep Dive: Ethics and Professional Standards"},
+    {type:"sub", text:"Why ethics are tested on the CFE exam"},
+    {type:"p", text:"Fraud examiners deal with sensitive facts, reputations, employment decisions, money, and possible criminal conduct. Poor investigative behavior can harm innocent people, destroy evidence, waive privilege, or expose the organization to liability. Ethics are therefore not separate from the investigation; they are part of doing it correctly."},
+    {type:"p", text:"The main professional duties are honesty, objectivity, competence, confidentiality, and due professional care. The exam may test these duties through scenarios where a client pressures the examiner, a conflict exists, or the examiner is asked to reach conclusions beyond the evidence."},
+    {type:"sub", text:"Objectivity"},
+    {type:"p", text:"Objectivity means the examiner follows the evidence even when the result is inconvenient. It also means considering evidence that may clear a suspect. A report that only includes facts supporting a desired conclusion is not objective."},
+    {type:"p", text:"Objectivity can be threatened by personal relationships, financial interests, prior involvement, pressure from management, or emotional reactions to the allegation. When objectivity is impaired, the examiner should disclose the issue, seek guidance, or withdraw if necessary."},
+    {type:"sub", text:"Competence"},
+    {type:"p", text:"Competence means accepting only work the examiner can perform properly. A CFE may understand fraud concepts but still need help from attorneys, digital forensic specialists, valuation experts, tax experts, or industry specialists. Asking for help is a sign of professional care, not weakness."},
+    {type:"p", text:"Due professional care includes planning, supervision, sufficient evidence, accurate documentation, appropriate methods, and clear reporting. It does not require perfection, but it requires reasonable professional judgment."},
+    {type:"sub", text:"Confidentiality and reporting"},
+    {type:"p", text:"Confidentiality means information should be shared only with authorized people who need to know. Investigation reports should be carefully distributed. Casual discussion of allegations can create defamation risk, alert subjects, or damage morale."},
+    {type:"p", text:"Reports should distinguish facts, analysis, and conclusions. They should avoid inflammatory language and unsupported accusations. Strong reports explain scope, procedures, evidence, limitations, findings, and recommendations."},
+    {type:"sub", text:"Legal liability"},
+    {type:"p", text:"Fraud examiners can face claims such as defamation, invasion of privacy, malicious prosecution, negligence, or interference with employment if they act carelessly. Good documentation, fair process, evidence-based conclusions, and coordination with counsel reduce risk."},
+    {type:"callout", text:"Exam tip: When ethics questions involve pressure to change findings, ignore evidence, disclose information broadly, or work beyond competence, choose the answer that protects objectivity and professional standards."}
+  ]
+};
+
+const QUIZ_BANK = {
+  "Accounting Fundamentals": [
+    {q:"Which statement best describes double-entry accounting?", options:["Every transaction affects at least two accounts","Only cash transactions are recorded","Only year-end entries require approval","Debits must always increase assets"], answer:0, explain:"Double-entry accounting records equal debits and credits across at least two accounts."},
+    {q:"Which account assertion is most directly affected by fictitious revenue?", options:["Occurrence/existence","Payroll authorization","Physical custody","Bank cutoff only"], answer:0, explain:"Fictitious revenue records sales that did not occur and often creates receivables that do not exist."},
+    {q:"What does segregation of duties primarily reduce?", options:["Opportunity","Pressure","Rationalization","Market risk"], answer:0, explain:"Segregation of duties reduces the opportunity to both commit and conceal fraud."},
+    {q:"High net income with weak operating cash flow is a red flag for what?", options:["Possible accrual manipulation","Guaranteed insolvency","Normal cash sales only","Strong inventory controls"], answer:0, explain:"Accrual-based earnings can be manipulated more easily than cash flow."},
+    {q:"Which control best detects differences between book cash and bank cash?", options:["Bank reconciliation","Ethics survey","Sales forecast","Vendor onboarding"], answer:0, explain:"Bank reconciliations compare accounting records to independent bank records."},
+    {q:"Capitalizing an expense improperly does what?", options:["Overstates assets and income","Understates assets and income","Only affects cash flow","Has no income effect"], answer:0, explain:"Capitalizing expenses delays expense recognition and inflates assets and current income."},
+    {q:"Which COSO component is the foundation for other controls?", options:["Control environment","Marketing strategy","Product pricing","Treasury management"], answer:0, explain:"The control environment sets tone, integrity, oversight, and accountability."},
+    {q:"Which is a detective control?", options:["Independent reconciliation","Locked safe","Preapproval limit","Password complexity"], answer:0, explain:"A reconciliation detects discrepancies after transactions occur."},
+    {q:"What is the accounting equation?", options:["Assets = Liabilities + Equity","Revenue = Cash + Debt","Assets = Revenue - Expenses","Equity = Sales + Payroll"], answer:0, explain:"The basic accounting equation is Assets = Liabilities + Equity."},
+    {q:"Why should controls be matched to the fraud point?", options:["A control must address where the scheme occurs","All controls detect all frauds","Only preventive controls matter","Detective controls are unnecessary"], answer:0, explain:"Skimming, larceny, billing fraud, and financial statement fraud leave different evidence."}
+  ]
+};
+function defaultQuiz(topic) {
+  return [
+    {q:`What is the most important first step when reviewing ${topic}?`, options:["Understand the scheme and likely evidence","Assume the suspect is guilty","Skip documentation","Interview the subject first every time"], answer:0, explain:"Start by understanding the scheme, records, controls, and evidence before drawing conclusions."},
+    {q:"Which is generally strongest in a fraud examination?", options:["Corroborated documentary evidence","Rumor only","A single unsupported opinion","Anonymous accusation with no follow-up"], answer:0, explain:"Corroborated documents and data are more reliable than unsupported statements."},
+    {q:"What should a fraud examiner avoid?", options:["Confirmation bias","Documenting work","Maintaining custody records","Following the evidence"], answer:0, explain:"Confirmation bias can cause the examiner to ignore contradictory evidence."},
+    {q:"Which action improves fraud prevention?", options:["Segregating incompatible duties","Letting one person control all steps","Removing review controls","Sharing passwords"], answer:0, explain:"Segregation of duties limits the ability to commit and conceal fraud."},
+    {q:"Which best describes a red flag?", options:["An indicator requiring follow-up","Definitive proof of fraud","A reason to skip controls","A legal conviction"], answer:0, explain:"Red flags signal risk but must be corroborated."},
+    {q:"Why are explanations important in quizzes and investigations?", options:["They connect facts to principles","They replace evidence","They prove intent alone","They eliminate the need for review"], answer:0, explain:"Explanations help connect facts, controls, and fraud concepts."},
+    {q:"Which response is best when evidence conflicts with your theory?", options:["Revise the theory and investigate further","Ignore the conflict","Hide the evidence","Stop documenting"], answer:0, explain:"Objectivity requires revising theories as evidence develops."},
+    {q:"Which concept is most tied to fraud opportunity?", options:["Weak controls","Personal debt only","Rationalization only","Industry reputation"], answer:0, explain:"Weak controls create opportunities to commit and conceal fraud."},
+    {q:"Which is a good study approach for this topic?", options:["Connect definitions to examples and controls","Memorize isolated words only","Ignore exceptions","Study only one domain"], answer:0, explain:"CFE questions often require applying concepts to scenarios."},
+    {q:"What should happen after a control weakness is found?", options:["Assign remediation and follow up","Forget it after reporting","Punish randomly","Disable monitoring"], answer:0, explain:"Weaknesses should be remediated, owned, tracked, and validated."}
+  ];
+}
+
+function enrichContent() {
+  Object.entries(CONTENT).forEach(([section, topics]) => {
+    Object.entries(topics).forEach(([topic, items]) => {
+      if (!items.some(item => item.type === 'h' && item.text === 'Expanded CFE Exam Notes')) {
+        items.push(...(EXTRA_READING[topic] || []));
+      }
+      if (!items.some(item => item.type === 'h' && item.text.startsWith('Beginner Deep Dive'))) {
+        items.push(...(BEGINNER_READING[topic] || []));
+      }
+      if (!items.some(item => item.type === 'quiz')) {
+        items.push({
+          type: 'quiz',
+          id: 'quiz-' + topic.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+          title: topic + ' — 10 Question Check',
+          questions: QUIZ_BANK[topic] || defaultQuiz(topic)
+        });
+      }
+    });
+  });
+}
+
 let currentSection = null;
 let currentTopic = null;
 let paras = [];
 let currentIdx = 0;
 let isPlaying = false;
 let speed = 1.0;
-let pitch = 1.0;
-let volume = 1.0;
-let selectedVoiceURI = localStorage.getItem('cfeReaderVoice') || '';
-let availableVoices = [];
 let utterance = null;
-const PROGRESS_KEY = 'cfeReaderProgress';
 
 function buildNav() {
   const nav = document.getElementById('nav');
@@ -366,11 +582,11 @@ function loadSection(sec) {
   loadTopic(sec, firstTopic);
 }
 
-function loadTopic(sec, topic, startIdx = 0) {
+function loadTopic(sec, topic) {
   stopReading();
   currentSection = sec;
   currentTopic = topic;
-  currentIdx = startIdx;
+  currentIdx = 0;
   document.querySelectorAll('.section-btn').forEach(b => b.classList.toggle('active', b.textContent === sec));
   document.querySelectorAll('.topic-btn').forEach(b => b.classList.toggle('active', b.textContent === topic));
   document.getElementById('section-title').textContent = sec;
@@ -379,12 +595,8 @@ function loadTopic(sec, topic, startIdx = 0) {
   document.getElementById('st-topic').textContent = 'Topic: ' + topic;
   const raw = CONTENT[sec][topic];
   paras = raw.filter(x => x.type === 'p' || x.type === 'callout');
-  currentIdx = Math.max(0, Math.min(currentIdx, Math.max(paras.length - 1, 0)));
   renderContent(raw);
-  updateHighlight();
   updateProgress();
-  saveProgress();
-  updateResumeCard();
 }
 
 function renderContent(items) {
@@ -399,6 +611,9 @@ function renderContent(items) {
     } else if (item.type === 'sub') {
       d.className = 'subheading';
       d.textContent = item.text;
+    } else if (item.type === 'quiz') {
+      d.className = 'quiz-block';
+      d.innerHTML = renderQuiz(item);
     } else if (item.type === 'callout') {
       d.className = 'callout';
       d.dataset.pidx = pIdx++;
@@ -412,6 +627,71 @@ function renderContent(items) {
     }
     el.appendChild(d);
   });
+}
+
+
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+}
+
+function renderQuiz(item) {
+  const quizId = item.id || ('quiz-' + Math.random().toString(36).slice(2));
+  const questions = item.questions || [];
+  return `
+    <h3>${escapeHtml(item.title || 'Quick Check')}</h3>
+    <p class="quiz-intro">Answer these 10 questions to confirm you understood this subsection.</p>
+    ${questions.map((q, qi) => `
+      <div class="quiz-question" data-q="${qi}">
+        <p>${qi + 1}. ${escapeHtml(q.q)}</p>
+        ${q.options.map((opt, oi) => `
+          <label class="quiz-option">
+            <input type="radio" name="${quizId}-${qi}" value="${oi}">
+            ${escapeHtml(opt)}
+          </label>
+        `).join('')}
+      </div>
+    `).join('')}
+    <div class="quiz-actions">
+      <button type="button" onclick="gradeQuiz('${quizId}')">Check answers</button>
+      <button type="button" onclick="resetQuiz('${quizId}')">Reset quiz</button>
+      <span class="quiz-result" id="${quizId}-result"></span>
+    </div>
+    <div class="quiz-feedback" id="${quizId}-feedback"></div>
+  `;
+}
+
+function findQuizById(quizId) {
+  for (const topics of Object.values(CONTENT)) {
+    for (const items of Object.values(topics)) {
+      const found = items.find(item => item.type === 'quiz' && item.id === quizId);
+      if (found) return found;
+    }
+  }
+  return null;
+}
+
+function gradeQuiz(quizId) {
+  const quiz = findQuizById(quizId);
+  if (!quiz) return;
+  let score = 0;
+  const feedback = [];
+  quiz.questions.forEach((q, qi) => {
+    const selected = document.querySelector(`input[name="${quizId}-${qi}"]:checked`);
+    const selectedIndex = selected ? parseInt(selected.value, 10) : -1;
+    const correct = selectedIndex === q.answer;
+    if (correct) score++;
+    feedback.push(`<div class="${correct ? 'correct' : 'wrong'}"><strong>${qi + 1}. ${correct ? 'Correct' : 'Review'}:</strong> ${escapeHtml(q.explain)}</div>`);
+  });
+  document.getElementById(`${quizId}-result`).textContent = `Score: ${score} / ${quiz.questions.length}`;
+  document.getElementById(`${quizId}-feedback`).innerHTML = feedback.join('');
+}
+
+function resetQuiz(quizId) {
+  document.querySelectorAll(`input[name^="${quizId}-"]`).forEach(input => input.checked = false);
+  const result = document.getElementById(`${quizId}-result`);
+  const feedback = document.getElementById(`${quizId}-feedback`);
+  if (result) result.textContent = '';
+  if (feedback) feedback.innerHTML = '';
 }
 
 function jumpTo(idx) {
@@ -454,11 +734,7 @@ function speakCurrent() {
   scrollToCurrent();
   const text = paras[currentIdx].text;
   utterance = new SpeechSynthesisUtterance(text);
-  const selectedVoice = getSelectedVoice();
-  if (selectedVoice) utterance.voice = selectedVoice;
   utterance.rate = speed;
-  utterance.pitch = pitch;
-  utterance.volume = volume;
   utterance.onend = () => { if (isPlaying) { currentIdx++; speakCurrent(); } };
   utterance.onerror = (e) => { if (e.error !== 'interrupted') { currentIdx++; if (isPlaying) speakCurrent(); } };
   window.speechSynthesis.speak(utterance);
@@ -515,212 +791,11 @@ function changeSpeed(val) {
 function updateProgress() {
   const pct = paras.length ? Math.round((currentIdx / paras.length) * 100) : 0;
   document.getElementById('progress-fill').style.width = pct + '%';
-  saveProgress();
-  updateResumeCard();
 }
 
-function saveProgress() {
-  if (!currentSection || !currentTopic || !paras.length) return;
-  const progress = {
-    section: currentSection,
-    topic: currentTopic,
-    index: Math.max(0, Math.min(currentIdx, paras.length - 1)),
-    total: paras.length,
-    savedAt: new Date().toISOString()
-  };
-  localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress));
-}
-
-function getSavedProgress() {
-  try {
-    const saved = JSON.parse(localStorage.getItem(PROGRESS_KEY) || 'null');
-    if (!saved || !CONTENT[saved.section] || !CONTENT[saved.section][saved.topic]) return null;
-    return saved;
-  } catch (error) {
-    return null;
-  }
-}
-
-function formatSavedDate(isoDate) {
-  if (!isoDate) return '';
-  const date = new Date(isoDate);
-  if (Number.isNaN(date.getTime())) return '';
-  return 'Saved ' + date.toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
-}
-
-function updateResumeCard() {
-  const card = document.getElementById('resume-card');
-  const details = document.getElementById('resume-details');
-  if (!card || !details) return;
-
-  const saved = getSavedProgress();
-  if (!saved) {
-    card.classList.remove('show');
-    details.textContent = '';
-    return;
-  }
-
-  const currentLocation = saved.section === currentSection && saved.topic === currentTopic;
-  const paragraphText = `${Math.min(saved.index + 1, saved.total || saved.index + 1)} of ${saved.total || '?'} paragraphs`;
-  const dateText = formatSavedDate(saved.savedAt);
-  details.textContent = `${saved.section} • ${saved.topic} • ${paragraphText}${dateText ? ' • ' + dateText : ''}`;
-  card.classList.toggle('show', !currentLocation || saved.index > 0);
-}
-
-function resumeSavedProgress() {
-  const saved = getSavedProgress();
-  if (!saved) return;
-  loadTopic(saved.section, saved.topic, saved.index || 0);
-  setTimeout(() => {
-    scrollToCurrent();
-    startReading();
-  }, 150);
-}
-
-function clearSavedProgress() {
-  localStorage.removeItem(PROGRESS_KEY);
-  const card = document.getElementById('resume-card');
-  if (card) card.classList.remove('show');
-}
-
-
-function isUSEnglishVoice(voice) {
-  return /^en-US$/i.test(voice.lang || '');
-}
-
-function isLikelyFemaleVoice(voice) {
-  const name = (voice.name || '').toLowerCase();
-  const femaleSignals = [
-    'female', 'woman', 'samantha', 'victoria', 'karen', 'moira', 'tessa',
-    'zira', 'jenny', 'aria', 'ana', 'ava', 'allison', 'susan', 'sara',
-    'joanna', 'kendra', 'kimberly', 'salli', 'ivy', 'olivia', 'amy',
-    'emma', 'lisa', 'michelle', 'natasha', 'monica'
-  ];
-  return femaleSignals.some(signal => name.includes(signal));
-}
-
-function voiceSortScore(voice) {
-  let score = 0;
-  if (isLikelyFemaleVoice(voice)) score -= 100;
-  if (voice.default) score -= 20;
-  if ((voice.localService || false) === false) score += 2;
-  return score;
-}
-
-function populateVoices() {
-  if (!window.speechSynthesis) {
-    const select = document.getElementById('voice-select');
-    select.innerHTML = '<option value="">Speech not supported in this browser</option>';
-    select.disabled = true;
-    return;
-  }
-
-  const allVoices = window.speechSynthesis.getVoices();
-  const usVoices = allVoices.filter(isUSEnglishVoice).sort((a, b) => {
-    const scoreDiff = voiceSortScore(a) - voiceSortScore(b);
-    return scoreDiff || a.name.localeCompare(b.name);
-  });
-
-  availableVoices = usVoices;
-  const select = document.getElementById('voice-select');
-  select.innerHTML = '';
-
-  if (!allVoices.length) {
-    select.innerHTML = '<option value="">Loading voices...</option>';
-    return;
-  }
-
-  if (!availableVoices.length) {
-    select.innerHTML = '<option value="">No US English voices found</option>';
-    select.disabled = true;
-    selectedVoiceURI = '';
-    return;
-  }
-
-  select.disabled = false;
-
-  const femaleVoices = availableVoices.filter(isLikelyFemaleVoice);
-  const otherVoices = availableVoices.filter(voice => !isLikelyFemaleVoice(voice));
-
-  function addVoiceOptions(label, voices) {
-    if (!voices.length) return;
-    const group = document.createElement('optgroup');
-    group.label = label;
-    voices.forEach(voice => {
-      const option = document.createElement('option');
-      option.value = voice.voiceURI;
-      option.textContent = `${voice.name} (${voice.lang})${voice.default ? ' — Default' : ''}`;
-      group.appendChild(option);
-    });
-    select.appendChild(group);
-  }
-
-  addVoiceOptions('Female US English voices', femaleVoices);
-  addVoiceOptions('Other US English voices', otherVoices);
-
-  const savedVoiceStillExists = availableVoices.some(voice => voice.voiceURI === selectedVoiceURI);
-  if (!savedVoiceStillExists) {
-    const preferredVoice = femaleVoices[0] || availableVoices.find(voice => voice.default) || availableVoices[0];
-    selectedVoiceURI = preferredVoice ? preferredVoice.voiceURI : '';
-    if (selectedVoiceURI) localStorage.setItem('cfeReaderVoice', selectedVoiceURI);
-  }
-
-  select.value = selectedVoiceURI;
-}
-
-function getSelectedVoice() {
-  return availableVoices.find(v => v.voiceURI === selectedVoiceURI) || null;
-}
-
-function changeVoice(value) {
-  selectedVoiceURI = value;
-  localStorage.setItem('cfeReaderVoice', selectedVoiceURI);
-  if (isPlaying) {
-    stopReading();
-    startReading();
-  }
-}
-
-function changePitch(val) {
-  pitch = parseFloat(val);
-  document.getElementById('pitch-val').textContent = pitch.toFixed(1);
-  if (isPlaying) {
-    stopReading();
-    startReading();
-  }
-}
-
-function changeVolume(val) {
-  volume = parseFloat(val);
-  document.getElementById('volume-val').textContent = volume.toFixed(1);
-  if (utterance) utterance.volume = volume;
-}
-
-function applyTheme(theme) {
-  const isDark = theme === 'dark';
-  document.body.classList.toggle('dark-mode', isDark);
-  const btn = document.getElementById('btn-theme');
-  btn.textContent = isDark ? '☀ Light' : '🌙 Dark';
-  btn.classList.toggle('active', isDark);
-  localStorage.setItem('cfeReaderTheme', theme);
-}
-
-function toggleTheme() {
-  const nextTheme = document.body.classList.contains('dark-mode') ? 'light' : 'dark';
-  applyTheme(nextTheme);
-}
-
+enrichContent();
 buildNav();
-populateVoices();
-if (window.speechSynthesis) window.speechSynthesis.onvoiceschanged = populateVoices;
-applyTheme(localStorage.getItem('cfeReaderTheme') || 'light');
-const savedProgress = getSavedProgress();
-if (savedProgress) {
-  loadTopic(savedProgress.section, savedProgress.topic, savedProgress.index || 0);
-  updateResumeCard();
-} else {
-  loadSection(Object.keys(CONTENT)[0]);
-}
+loadSection(Object.keys(CONTENT)[0]);
 </script>
 </body>
 </html>
