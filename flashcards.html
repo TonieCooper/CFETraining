@@ -6,16 +6,26 @@
 <title>CFE Flashcards</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f2f5; color: #1a1a2e; min-height: 100vh; }
+:root {
+  --page-bg:#f0f2f5; --text:#1a1a2e; --panel:#ffffff; --panel-2:#f8fafc; --border:#e0e4ea;
+  --primary:#1e2a3a; --primary-2:#2d3f52; --accent:#1a5fb4; --muted:#666; --muted-2:#888;
+  --card-back:#1e2a3a; --card-back-border:#2d3f52; --card-back-text:#e8ecf0; --shadow:rgba(0,0,0,0.06);
+}
+body.dark-mode {
+  --page-bg:#0f1724; --text:#edf2f7; --panel:#172033; --panel-2:#111827; --border:#2d3f52;
+  --primary:#0b1220; --primary-2:#233149; --accent:#7eb8f7; --muted:#b7c2d0; --muted-2:#93a4b8;
+  --card-back:#dbeafe; --card-back-border:#93c5fd; --card-back-text:#0f1724; --shadow:rgba(0,0,0,0.28);
+}
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--page-bg); color: var(--text); min-height: 100vh; transition: background .2s, color .2s; }
 #app { max-width: 820px; margin: 0 auto; padding: 20px; }
-.top-bar { background: #1e2a3a; color: #fff; border-radius: 12px; padding: 16px 24px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+.top-bar { background: var(--primary); color: #fff; border-radius: 12px; padding: 16px 24px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
 .top-bar h1 { font-size: 18px; font-weight: 600; }
 .sec-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
-.sec-tab { background: #fff; border: 2px solid #e0e4ea; border-radius: 10px; padding: 9px 16px; cursor: pointer; font-size: 13px; font-family: inherit; font-weight: 500; color: #444; transition: all 0.15s; }
+.sec-tab { background: var(--panel); border: 2px solid var(--border); border-radius: 10px; padding: 9px 16px; cursor: pointer; font-size: 13px; font-family: inherit; font-weight: 500; color: var(--text); transition: all 0.15s; }
 .sec-tab:hover { border-color: #4a7ab0; color: #1a5fb4; }
 .sec-tab.active { border-color: #1a5fb4; background: #1a5fb4; color: #fff; }
 .controls { display: flex; gap: 10px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
-.ctrl-btn { background: #fff; border: 2px solid #e0e4ea; border-radius: 9px; padding: 8px 16px; cursor: pointer; font-size: 13px; font-family: inherit; font-weight: 500; color: #444; transition: all 0.15s; }
+.ctrl-btn { background: var(--panel); border: 2px solid var(--border); border-radius: 9px; padding: 8px 16px; cursor: pointer; font-size: 13px; font-family: inherit; font-weight: 500; color: var(--text); transition: all 0.15s; }
 .ctrl-btn:hover { border-color: #4a7ab0; color: #1a5fb4; }
 .ctrl-btn.active { border-color: #1a5fb4; background: #e8f0fe; color: #1a5fb4; }
 .ctrl-btn.green { border-color: #2d7a3a; color: #2d7a3a; }
@@ -23,24 +33,24 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .ctrl-btn.red { border-color: #c0392b; color: #c0392b; }
 .ctrl-btn.red:hover { background: #fdf0ee; }
 .prog-row { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
-.prog-bar { flex: 1; height: 8px; background: #e0e4ea; border-radius: 4px; overflow: hidden; }
+.prog-bar { flex: 1; height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
 .prog-fill { height: 8px; background: #1a5fb4; border-radius: 4px; transition: width 0.4s; }
 .prog-label { font-size: 13px; color: #666; white-space: nowrap; }
 .card-scene { perspective: 1400px; width: 100%; margin-bottom: 20px; }
 .card-wrap { width: 100%; min-height: 300px; position: relative; transform-style: preserve-3d; transition: transform 0.55s cubic-bezier(0.4,0,0.2,1); cursor: pointer; }
 .card-wrap.flipped { transform: rotateY(180deg); }
 .card-face { position: absolute; width: 100%; min-height: 300px; backface-visibility: hidden; border-radius: 14px; padding: 36px 40px; display: flex; flex-direction: column; justify-content: center; }
-.card-front { background: #fff; border: 2px solid #e0e4ea; box-shadow: 0 2px 16px rgba(0,0,0,0.06); }
-.card-back { background: #1e2a3a; color: #e8ecf0; border: 2px solid #2d3f52; transform: rotateY(180deg); }
+.card-front { background: var(--panel); border: 2px solid var(--border); box-shadow: 0 2px 16px var(--shadow); }
+.card-back { background: var(--card-back); color: var(--card-back-text); border: 2px solid var(--card-back-border); transform: rotateY(180deg); }
 .card-tag { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: #4a7ab0; margin-bottom: 14px; }
 .card-back .card-tag { color: #7eb8f7; }
 .card-hint { font-size: 12px; color: #bbb; margin-bottom: 14px; }
-.card-text { font-size: 18px; line-height: 1.7; font-weight: 500; color: #1a1a2e; }
-.card-back .card-text { font-size: 16px; font-weight: 400; color: #e8ecf0; line-height: 1.75; }
+.card-text { font-size: 18px; line-height: 1.7; font-weight: 500; color: var(--text); }
+.card-back .card-text { font-size: 16px; font-weight: 400; color: var(--card-back-text); line-height: 1.75; }
 .card-number { font-size: 12px; color: #999; margin-top: 20px; align-self: flex-end; }
 .card-back .card-number { color: #5a7090; }
 .nav-row { display: flex; justify-content: center; align-items: center; gap: 16px; margin-bottom: 16px; }
-.nav-btn { background: #1e2a3a; color: #fff; border: none; border-radius: 10px; padding: 12px 28px; font-size: 15px; font-family: inherit; cursor: pointer; font-weight: 500; transition: background 0.15s; }
+.nav-btn { background: var(--primary); color: #fff; border: none; border-radius: 10px; padding: 12px 28px; font-size: 15px; font-family: inherit; cursor: pointer; font-weight: 500; transition: background 0.15s; }
 .nav-btn:hover { background: #2d3f52; }
 .nav-btn:disabled { background: #b0b8c8; cursor: not-allowed; }
 .flip-btn { background: #1a5fb4; color: #fff; border: none; border-radius: 10px; padding: 12px 28px; font-size: 15px; font-family: inherit; cursor: pointer; font-weight: 500; }
@@ -55,7 +65,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .rate-btn.good:hover { background: #2d7a3a; color: #fff; }
 .rate-btn.easy { background: #e8f0fe; color: #1a5fb4; border: 2px solid #6090d8; }
 .rate-btn.easy:hover { background: #1a5fb4; color: #fff; }
-.stats-bar { display: flex; gap: 12px; flex-wrap: wrap; background: #fff; border-radius: 10px; padding: 12px 18px; margin-bottom: 20px; border: 1px solid #e0e4ea; }
+.stats-bar { display: flex; gap: 12px; flex-wrap: wrap; background: var(--panel); border-radius: 10px; padding: 12px 18px; margin-bottom: 20px; border: 1px solid var(--border); }
 .stat-item { text-align: center; flex: 1; min-width: 60px; }
 .stat-val { font-size: 20px; font-weight: 700; color: #1e2a3a; }
 .stat-val.green { color: #2d7a3a; }
@@ -64,19 +74,35 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .stat-label { font-size: 11px; color: #888; margin-top: 2px; }
 .filter-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 16px; }
 .filter-label { font-size: 13px; color: #666; }
-.filter-btn { background: #fff; border: 2px solid #e0e4ea; border-radius: 8px; padding: 5px 12px; cursor: pointer; font-size: 12px; font-family: inherit; }
+.filter-btn { background: var(--panel); border: 2px solid var(--border); border-radius: 8px; padding: 5px 12px; cursor: pointer; font-size: 12px; font-family: inherit; color: var(--text); transition: all 0.15s; }
 .filter-btn.active { border-color: #1a5fb4; background: #e8f0fe; color: #1a5fb4; }
-.done-screen { background: #fff; border-radius: 14px; padding: 40px; text-align: center; }
+.done-screen { background: var(--panel); border-radius: 14px; padding: 40px; text-align: center; }
 .done-icon { font-size: 52px; margin-bottom: 14px; }
 .done-title { font-size: 22px; font-weight: 700; color: #1e2a3a; margin-bottom: 8px; }
 .done-sub { font-size: 15px; color: #666; margin-bottom: 24px; }
+
+.speech-panel { background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:12px 14px; margin-bottom:16px; display:grid; gap:10px; }
+.speech-row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+.speech-row label { font-size:12px; color:#666; font-weight:600; }
+.speech-row select { min-width:220px; flex:1; border:2px solid var(--border); border-radius:8px; padding:7px 10px; font-family:inherit; background:var(--panel); color:var(--text); }
+.speech-row input[type=range] { width:120px; }
+.ctrl-btn.speaking { border-color:#1a5fb4; background:#1a5fb4; color:#fff; }
+
+body.dark-mode .sec-tab.active, body.dark-mode .filter-btn.active, body.dark-mode .ctrl-btn.active { background:#1a5fb4; border-color:#7eb8f7; color:#fff; }
+body.dark-mode .filter-btn:hover, body.dark-mode .sec-tab:hover, body.dark-mode .ctrl-btn:hover { border-color:#7eb8f7; color:#fff; background:#233149; }
+body.dark-mode .card-tag, body.dark-mode .stat-val, body.dark-mode .done-title { color:var(--accent); }
+body.dark-mode .card-hint, body.dark-mode .stat-label, body.dark-mode .filter-label, body.dark-mode .prog-label, body.dark-mode .speech-row label { color:var(--muted); }
+body.dark-mode .rate-btn.again { background:#3b1f22; }
+body.dark-mode .rate-btn.hard { background:#3a2f13; }
+body.dark-mode .rate-btn.good { background:#143326; }
+body.dark-mode .rate-btn.easy { background:#102a4c; }
 </style>
 </head>
 <body>
 <div id="app">
   <div class="top-bar">
     <h1>CFE Flashcards</h1>
-    <span id="deck-size" style="font-size:13px;color:#8ca0b8;"></span>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end;"><button class="ctrl-btn" id="theme-btn" onclick="toggleTheme()" style="padding:7px 12px;">🌙 Dark Mode</button><span id="deck-size" style="font-size:13px;color:#8ca0b8;"></span></div>
   </div>
   <div class="sec-row" id="sec-tabs"></div>
   <div class="stats-bar">
@@ -98,6 +124,26 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
     <button class="ctrl-btn" onclick="reshuffleCards()">🔀 Reshuffle</button>
     <button class="ctrl-btn" onclick="restartDeck()">↺ Restart</button>
     <button class="ctrl-btn" id="auto-btn" onclick="toggleAuto()">▶ Auto-flip (5s)</button>
+  </div>
+  <div class="speech-panel" aria-label="Flashcard audio controls">
+    <div class="speech-row">
+      <button class="ctrl-btn" onclick="speakQuestion()">🔊 Read Question</button>
+      <button class="ctrl-btn" onclick="speakAnswer()">🔊 Read Answer</button>
+      <button class="ctrl-btn" onclick="speakBoth()">🔊 Read Both</button>
+      <button class="ctrl-btn" onclick="stopSpeech()">⏹ Stop Audio</button>
+      <button class="ctrl-btn" id="auto-read-btn" onclick="toggleAutoRead()">Auto-read: Off</button>
+      <button class="ctrl-btn" id="auto-advance-audio-btn" onclick="toggleAutoAdvanceAudio()">Auto-next after audio: Off</button>
+    </div>
+    <div class="speech-row">
+      <label for="voice-select">Voice</label>
+      <select id="voice-select" onchange="saveSpeechSettings()"></select>
+      <label for="speech-rate">Rate <span id="speech-rate-val">1.0×</span></label>
+      <input type="range" id="speech-rate" min="0.6" max="1.6" step="0.1" value="1.0" oninput="updateSpeechSettingLabels(); saveSpeechSettings();">
+      <label for="speech-pitch">Pitch <span id="speech-pitch-val">1.0</span></label>
+      <input type="range" id="speech-pitch" min="0.7" max="1.4" step="0.1" value="1.0" oninput="updateSpeechSettingLabels(); saveSpeechSettings();">
+      <label for="speech-volume">Volume <span id="speech-volume-val">100%</span></label>
+      <input type="range" id="speech-volume" min="0" max="1" step="0.1" value="1" oninput="updateSpeechSettingLabels(); saveSpeechSettings();">
+    </div>
   </div>
   <div class="prog-row">
     <div class="prog-bar"><div class="prog-fill" id="prog-fill"></div></div>
@@ -220,6 +266,37 @@ const ALL_CARDS = {
 {front:"What is 'construction fraud'?",back:"Fraud in construction projects — overbilling for materials (substituting cheaper materials while billing for specified ones), charging for non-existent work, bid rigging among contractors, kickbacks from subcontractors, and falsifying project completion records to release payment."},
 {front:"What is an 'embezzlement'?",back:"The fraudulent misappropriation of property lawfully entrusted to someone — the fraudster had lawful possession and then converted the asset for personal use. Key distinction from theft: the embezzler had legitimate initial access. Most occupational fraud cases legally qualify as embezzlement."},
 {front:"What is 'subscription fraud'?",back:"Using another person's identity or payment information to subscribe to services, or creating fictitious accounts to abuse free trials, promotional credits, or referral bonuses. Common in digital/SaaS businesses where account creation is easy and verification is limited."},
+{front:"What is sales skimming?",back:"Stealing cash from a sale before the transaction is recorded, such as failing to ring up a cash sale and pocketing the money. Detection often relies on inventory-to-sales comparisons, customer complaints, surveillance, and exception reporting."},
+{front:"What is receivables skimming?",back:"Stealing payments from customers before they are posted to accounts receivable. Concealment may include lapping, account write-offs, or issuing false credit memos."},
+{front:"What is a false void scheme?",back:"A recorded sale is later voided in the system even though the customer paid and kept the goods. The employee removes the cash and uses the void to make the register balance."},
+{front:"What is a false refund scheme?",back:"An employee processes a refund for goods that were not returned, then keeps the cash or routes the refund to a card/account they control."},
+{front:"What is a pass-through billing scheme?",back:"A fraudster creates or controls an intermediary vendor that buys goods from a real supplier, marks them up, and resells them to the employer without adding real value."},
+{front:"What is an inflated invoice scheme?",back:"A vendor or employee submits an invoice for more than the agreed price, more units than delivered, or services not performed. The excess may be kept by the vendor or shared as a kickback."},
+{front:"What is a non-accomplice vendor scheme?",back:"An employee causes the organization to pay a legitimate vendor for the employee's personal purchases without the vendor knowingly participating in the fraud."},
+{front:"What is a pay-and-return scheme?",back:"An employee intentionally overpays a vendor, then asks the vendor to return the excess payment and diverts the refund to themselves."},
+{front:"What is theft of inventory and other assets?",back:"The misappropriation of non-cash assets such as inventory, equipment, supplies, or intellectual property. Common methods include false shipping documents, write-offs, and unauthorized personal use."},
+{front:"What is misuse of company assets?",back:"Using company property, equipment, vehicles, or services for personal benefit without authorization. It may be less direct than theft but still deprives the organization of value."},
+{front:"What is a false shipment scheme?",back:"A perpetrator creates shipping documents for goods that are sent to themselves, an accomplice, or a shell entity, while records make the shipment appear legitimate."},
+{front:"What is purchasing and receiving fraud?",back:"Fraud involving ordering, receiving, or approving goods. Examples include receiving reports for goods not received, approving poor-quality goods, or diverting delivered goods."},
+{front:"What is fictitious payroll hours fraud?",back:"An employee claims hours not actually worked, often through falsified timecards, buddy punching, or supervisor collusion."},
+{front:"What is salary manipulation fraud?",back:"Unauthorized changes to pay rates, bonuses, deductions, or leave balances to increase compensation improperly."},
+{front:"What is commission manipulation fraud?",back:"Inflating commissionable sales, creating fictitious sales, changing commission rates, or delaying reversals to receive unearned commissions."},
+{front:"What is a write-off scheme?",back:"A stolen customer payment is concealed by writing off the customer's balance as bad debt, discount, allowance, or adjustment."},
+{front:"What is kiting?",back:"A scheme exploiting the time lag between deposits and withdrawals at different banks to create artificial cash balances. It often involves writing checks without sufficient funds and covering them with other unfunded checks."},
+{front:"What is a fictitious accounts receivable scheme?",back:"Recording receivables from fake customers or fake sales to overstate revenue and assets. Detection includes confirmations, subsequent cash receipts testing, and shipping document review."},
+{front:"What is improper asset valuation?",back:"Overstating assets by using unsupported estimates, ignoring impairment, inflating inventory counts, or assigning values above realizable amounts."},
+{front:"What is liability omission fraud?",back:"Failing to record liabilities or expenses to make the organization appear more profitable or solvent than it is."},
+{front:"What is improper disclosure fraud?",back:"Misleading users of financial statements by omitting or obscuring important information such as related-party transactions, contingent liabilities, or changes in accounting methods."},
+{front:"What is premature revenue recognition?",back:"Recording revenue before it is earned under the applicable accounting standards, such as before delivery, before performance obligations are met, or when collectability is doubtful."},
+{front:"What is fictitious inventory?",back:"Recording inventory that does not exist or inflating physical counts. It overstates assets and can understate cost of goods sold."},
+{front:"What is concealed liabilities and expenses fraud?",back:"Delaying, omitting, or hiding expenses and obligations to inflate income or improve financial ratios."},
+{front:"What is corruption in occupational fraud?",back:"Misusing influence in a business transaction to obtain a personal benefit while violating a duty to the employer or another party. It includes bribery, conflicts of interest, illegal gratuities, and economic extortion."},
+{front:"What is illegal gratuity?",back:"Something of value given after a decision or act, as a reward rather than a pre-arranged bribe. It still corrupts judgment and may violate law or policy."},
+{front:"What is economic extortion?",back:"A person demands payment or something of value by using their position or authority to pressure another party."},
+{front:"What is bid splitting?",back:"Dividing a purchase into smaller amounts to avoid approval thresholds, competitive bidding requirements, or review controls."},
+{front:"What is product substitution?",back:"Delivering goods or services of lower quality than contracted while billing for the specified higher-quality items."},
+{front:"What is unbundling in healthcare fraud?",back:"Billing separately for services that should be billed together under one lower-cost code."},
+{front:"What is upcoding in healthcare fraud?",back:"Billing for a more expensive service or diagnosis than was actually provided or supported."},
 ],
 1: [ // Fraud Investigations & Legal Issues - 110+ cards
 {front:"What is the 'predicate' requirement for a fraud examination?",back:"A reasonable basis — specific allegation, documented anomaly, whistleblower tip, or pattern of facts — for believing fraud may have occurred. Without adequate predicate, a fraud examination should not be commenced, as unfounded investigations create legal and ethical risks."},
@@ -284,6 +361,55 @@ const ALL_CARDS = {
 {front:"What is 'insider trading'?",back:"Trading in securities based on material, nonpublic information in breach of a duty of trust or confidence. Under SEC Rule 10b-5, it is illegal for corporate insiders (and tippees) to trade on material nonpublic information. Penalties include disgorgement, civil penalties, and criminal prosecution."},
 {front:"What is an 'affirmative defense'?",back:"A defense that admits the basic facts alleged but provides additional facts that justify or excuse the conduct — such as entrapment, duress, statute of limitations, or good faith reliance on professional advice. The defendant bears the burden of proving an affirmative defense."},
 {front:"What is the 'Upjohn warning' (corporate Miranda)?",back:"When corporate counsel interviews an employee in connection with an internal investigation, counsel must advise the employee that: counsel represents the company, not the employee; the communication is privileged to the company; and the company (not the employee) may disclose the communication."},
+{front:"What is an engagement letter in a fraud examination?",back:"A document defining the scope, objectives, responsibilities, fees, deliverables, and limitations of a fraud examination or forensic accounting engagement."},
+{front:"Why should fraud examinations proceed from general to specific?",back:"Starting broadly and moving toward specific allegations helps preserve objectivity, avoid tipping off suspects, and build a reliable evidentiary foundation."},
+{front:"Why interview neutral witnesses before suspects?",back:"Neutral witnesses can provide background, documents, and timelines before the subject is alerted. This helps the examiner ask better questions and avoid premature confrontation."},
+{front:"What is an admission-seeking interview?",back:"An interview with a suspect conducted after sufficient evidence has been developed, designed to obtain truthful admissions or explanations about the suspected conduct."},
+{front:"What is an informational interview?",back:"A non-accusatory interview intended to gather facts from witnesses or people with relevant knowledge."},
+{front:"What is rapport in interviewing?",back:"A professional connection that encourages cooperation and accurate recall. Rapport reduces defensiveness and improves the quality of information gathered."},
+{front:"What is a leading question?",back:"A question that suggests the desired answer. Leading questions can contaminate witness memory and weaken the credibility of interview results."},
+{front:"What is an open-ended question?",back:"A question that invites a narrative response, such as 'Tell me what happened.' It is useful early in interviews because it produces richer, less contaminated information."},
+{front:"What is a closed-ended question?",back:"A question that asks for a specific fact or yes/no answer. It is useful for clarifying details after open-ended questioning."},
+{front:"What is a signed statement?",back:"A written statement reviewed and signed by the interviewee, documenting their account or admission. It should be accurate, voluntary, and free from coercive language."},
+{front:"What is corroboration?",back:"Using independent evidence to support or verify a witness statement, document, transaction, or conclusion."},
+{front:"What is evidence preservation?",back:"Protecting relevant physical, digital, and documentary evidence from alteration, loss, or destruction once an investigation is anticipated."},
+{front:"What is a document request list?",back:"A structured list of records needed for an investigation, such as bank statements, invoices, emails, contracts, payroll files, and system logs."},
+{front:"What is a fraud theory?",back:"A working hypothesis explaining how the fraud may have occurred, who may be involved, what evidence should exist, and how the loss may be measured."},
+{front:"Why should fraud theories be revised?",back:"New evidence may support, weaken, or contradict the initial theory. Revising the theory preserves objectivity and prevents confirmation bias."},
+{front:"What is confirmation bias in investigations?",back:"The tendency to seek or favor evidence that supports a prior belief while discounting evidence that contradicts it."},
+{front:"What is a timeline analysis?",back:"Organizing events, transactions, communications, and access records chronologically to identify patterns, inconsistencies, and key decision points."},
+{front:"What is a link analysis?",back:"A method of mapping relationships among people, entities, accounts, addresses, phone numbers, transactions, and documents."},
+{front:"What is a flow-of-funds analysis?",back:"Tracing money through accounts and transactions to show source, movement, use, and destination of funds."},
+{front:"What is an interview memorandum?",back:"A written record summarizing who was interviewed, when, who was present, topics discussed, key statements, and follow-up items."},
+{front:"What is a subpoena?",back:"A legal order requiring testimony, document production, or both. Noncompliance can result in court sanctions."},
+{front:"What is a deposition?",back:"Sworn testimony taken outside court during litigation, recorded by a court reporter and usable in later proceedings."},
+{front:"What is an affidavit?",back:"A written statement of facts sworn or affirmed under oath before an authorized official."},
+{front:"What is perjury?",back:"Knowingly making a false material statement under oath in an official proceeding."},
+{front:"What is obstruction of justice?",back:"Conduct intended to corruptly impede an investigation or legal proceeding, such as destroying evidence, influencing witnesses, or falsifying records."},
+{front:"What is probable cause?",back:"A legal standard meaning there is a reasonable basis to believe a crime was committed and that evidence or a suspect is connected to it."},
+{front:"What is reasonable suspicion?",back:"A lower legal standard than probable cause, based on specific and articulable facts suggesting possible wrongdoing."},
+{front:"What is the burden of proof in criminal cases?",back:"The prosecution must prove each element of the offense beyond a reasonable doubt."},
+{front:"What is the burden of proof in most civil fraud cases?",back:"Generally preponderance of the evidence, though some fraud claims may require clear and convincing evidence depending on jurisdiction."},
+{front:"What is preponderance of the evidence?",back:"A standard meaning the claim is more likely true than not, often described as greater than 50% likelihood."},
+{front:"What is clear and convincing evidence?",back:"A higher civil standard requiring evidence that produces a firm belief or conviction that the allegation is true."},
+{front:"What is beyond a reasonable doubt?",back:"The highest legal burden, used in criminal cases, requiring proof so convincing that no reasonable doubt remains about guilt."},
+{front:"What is materiality in a fraud case?",back:"The importance of a fact or misstatement to a decision-maker. A material misstatement is one that could influence a reasonable user's decision."},
+{front:"What is reliance in fraud law?",back:"The victim's dependence on a false statement or omission when deciding to act or refrain from acting."},
+{front:"What is damages in fraud law?",back:"The measurable loss caused by the fraudulent conduct, such as stolen funds, overpayments, lost profits, or investigation costs where recoverable."},
+{front:"What is causation in a fraud claim?",back:"A required link showing the fraudulent conduct caused the victim's loss."},
+{front:"What is a civil fraud remedy?",back:"A legal remedy such as compensatory damages, punitive damages where allowed, rescission, restitution, disgorgement, injunction, or asset freeze."},
+{front:"What is restitution?",back:"Returning money or property to the victim to compensate for losses caused by the offense."},
+{front:"What is disgorgement?",back:"Requiring a wrongdoer to give up ill-gotten gains, even if the amount differs from the victim's direct loss."},
+{front:"What is asset freezing?",back:"A court order preventing movement or dissipation of assets while litigation or recovery efforts proceed."},
+{front:"What is a search warrant?",back:"A court order authorizing law enforcement to search a specified place and seize specified evidence based on probable cause."},
+{front:"What is consent search?",back:"A search conducted with voluntary permission. In workplaces, consent may come from policy acknowledgments, system banners, or authorized management."},
+{front:"What is expectation of privacy?",back:"A legal concept determining whether a person can challenge a search. Workplace policies and company-owned systems can reduce privacy expectations."},
+{front:"What is an expert report?",back:"A written report by an expert witness explaining opinions, bases, methods, data considered, and conclusions for litigation purposes."},
+{front:"What is Daubert reliability?",back:"A U.S. standard for admitting expert testimony, focusing on whether methods are reliable, tested, peer-reviewed, have known error rates, and are generally accepted."},
+{front:"What is the role of a CFE as a fact witness?",back:"To testify about facts personally observed or work performed, without offering expert opinions beyond the permitted scope."},
+{front:"What is the role of a CFE as an expert witness?",back:"To help the trier of fact understand specialized fraud, accounting, investigative, or damages issues through qualified opinions."},
+{front:"What is privilege waiver?",back:"Loss of legal privilege by disclosing protected communications or materials to unauthorized third parties."},
+{front:"What is the crime-fraud exception?",back:"Attorney-client privilege does not protect communications made to further or conceal a crime or fraud."},
 ],
 2: [ // Fraud Prevention & Deterrence - 110+ cards
 {front:"What are the three elements of the Fraud Triangle?",back:"1. PRESSURE — a non-shareable financial problem or motivation; 2. OPPORTUNITY — weak controls or access that make fraud possible and concealable; 3. RATIONALIZATION — a justification that makes the act feel acceptable (e.g., 'I'm just borrowing it,' 'I deserve it,' 'Everyone does it')."},
@@ -362,6 +488,43 @@ const ALL_CARDS = {
 {front:"What is 'due professional care'?",back:"The standard of care required of a fraud examiner — applying the diligence, competence, and judgment expected of a reasonably prudent professional with comparable training and experience. Includes adequate planning, following leads, documenting work, and recognizing when specialist expertise is needed."},
 {front:"What are 'physical controls' over assets?",back:"Physical security measures protecting assets from theft or unauthorized access — cash registers, safes, locked storage, access-controlled facilities, security cameras, and inventory tracking systems. Directly reduce the opportunity component of the Fraud Triangle by limiting access to valuable assets."},
 {front:"What is 'anti-fraud culture'?",back:"An organizational environment where fraud is universally understood to be unacceptable, where employees feel safe reporting concerns, where controls are respected rather than resented, and where ethical behavior is rewarded and modeled at all levels. The ultimate fraud prevention objective."},
+{front:"What is a fraud response plan?",back:"A predefined plan for receiving allegations, preserving evidence, assigning responsibilities, investigating, reporting, disciplining, remediating controls, and communicating appropriately."},
+{front:"What is a whistleblower triage process?",back:"A method for prioritizing tips based on credibility, severity, legal exposure, parties involved, and urgency of evidence preservation."},
+{front:"What is non-retaliation policy?",back:"A policy prohibiting adverse action against people who report concerns in good faith or participate in investigations."},
+{front:"What is management certification?",back:"A requirement that managers affirm compliance with policies, accuracy of reports, or effectiveness of controls. It reinforces accountability."},
+{front:"What is conflict-of-interest disclosure?",back:"A process requiring employees, officers, and directors to disclose relationships or financial interests that could bias business decisions."},
+{front:"What is gifts and entertainment policy?",back:"Rules limiting what employees may give or receive from vendors, customers, or public officials to reduce bribery and influence risks."},
+{front:"What is third-party risk management?",back:"Evaluating and monitoring vendors, agents, distributors, and partners for fraud, corruption, sanctions, financial, and compliance risks."},
+{front:"What is beneficial ownership verification?",back:"Identifying the real people who own or control an entity, reducing shell company and conflict-of-interest risk."},
+{front:"What is sanctions screening?",back:"Checking customers, vendors, and counterparties against government sanctions lists to prevent prohibited transactions."},
+{front:"What is transaction monitoring?",back:"Automated or manual review of transactions for unusual patterns, thresholds, duplicates, outliers, or policy violations."},
+{front:"What is exception reporting?",back:"Reports that flag transactions outside expected rules, such as duplicate invoices, weekend payments, round-dollar entries, or payments just under approval thresholds."},
+{front:"What is approval hierarchy?",back:"A control requiring higher-level approval as transaction risk or dollar amount increases."},
+{front:"What is dual authorization?",back:"Requiring two independent approvals for sensitive activities such as wire transfers, vendor changes, payroll changes, or large disbursements."},
+{front:"What is callback verification?",back:"Independently confirming payment or bank account changes using a trusted phone number already on file, not contact details in the request."},
+{front:"What is positive pay as prevention?",back:"A bank control that matches presented checks to an authorized issue file, preventing altered or counterfeit checks from clearing."},
+{front:"What is ACH debit block/filter?",back:"A bank control that blocks or permits electronic debits only from approved originators, reducing unauthorized withdrawals."},
+{front:"What is user access review?",back:"Periodic review of system permissions to ensure users have only the access needed for their roles and that terminated users are removed."},
+{front:"What is least privilege?",back:"An access-control principle giving users the minimum permissions necessary to perform their job duties."},
+{front:"What is privileged access monitoring?",back:"Enhanced oversight of administrator or superuser accounts because they can override controls, change data, and conceal activity."},
+{front:"What is change management control?",back:"A process requiring approval, testing, documentation, and monitoring of changes to systems, reports, workflows, or master data."},
+{front:"What is IT general controls?",back:"Controls over IT environments, including access, change management, operations, backups, and security, supporting the reliability of application controls."},
+{front:"What is application control?",back:"An automated control within software, such as required fields, edit checks, approval workflows, three-way matching, or duplicate invoice prevention."},
+{front:"What is three-way matching?",back:"Matching purchase order, receiving report, and vendor invoice before payment to confirm goods were ordered, received, and billed correctly."},
+{front:"What is vendor master file review?",back:"Periodic review for duplicate vendors, inactive vendors, missing tax IDs, employee addresses, suspicious bank changes, or incomplete documentation."},
+{front:"What is employee-vendor matching?",back:"Comparing vendor data to employee data such as addresses, phone numbers, bank accounts, or tax IDs to detect conflicts or shell vendors."},
+{front:"What is duplicate payment testing?",back:"Data analysis to identify invoices with matching vendor, amount, date, invoice number, or similar attributes that may have been paid twice."},
+{front:"What is a fraud dashboard?",back:"A set of metrics and alerts tracking fraud risks, hotline activity, control exceptions, investigation status, and remediation progress."},
+{front:"What is key risk indicator (KRI)?",back:"A measurable signal that risk is increasing, such as rising manual journal entries, growing write-offs, more vendor changes, or higher override rates."},
+{front:"What is key control indicator (KCI)?",back:"A measure showing whether controls operate effectively, such as percentage of reconciliations completed on time or unresolved exceptions."},
+{front:"What is remediation tracking?",back:"Following control weaknesses and investigation findings through corrective action, owner assignment, due dates, validation, and closure."},
+{front:"What is disciplinary consistency?",back:"Applying consequences fairly across levels and departments, which strengthens deterrence and reduces rationalization."},
+{front:"What is executive override review?",back:"Specific monitoring of transactions, journal entries, approvals, or exceptions initiated or approved by senior leaders."},
+{front:"What is board oversight of fraud risk?",back:"The board or audit committee ensures management identifies fraud risks, maintains controls, supports reporting mechanisms, and investigates allegations objectively."},
+{front:"What is fraud deterrence?",back:"Creating conditions that discourage fraud by increasing perceived detection likelihood, reducing opportunity, and reinforcing consequences."},
+{front:"What is fraud prevention?",back:"Controls and culture designed to stop fraud before it occurs, such as segregation of duties, approvals, access restrictions, and ethics programs."},
+{front:"What is fraud detection?",back:"Processes that identify fraud after it has started, such as tips, audits, analytics, reconciliations, and surveillance."},
+{front:"What is fraud response?",back:"Actions taken after suspected fraud is identified: preserve evidence, investigate, report, discipline, recover losses, and improve controls."},
 ],
 };
 
@@ -374,11 +537,27 @@ let filter = 'all';
 let autoTimer = null;
 let autoOn = false;
 let autoPhase = 'front';
+let voices = [];
+let autoRead = localStorage.getItem('cfeFlashcardsAutoRead') === 'true';
+let autoAdvanceAudio = localStorage.getItem('cfeFlashcardsAutoAdvanceAudio') === 'true';
+let speechQueue = [];
+let speechIndex = 0;
+let speechMode = null;
+let speechRunId = 0;
 
 function init() {
+  applySavedTheme();
   buildSectionTabs();
+  loadSpeechSettings();
+  populateVoices();
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.onvoiceschanged = populateVoices;
+  }
   loadSection(0);
+  updateAutoReadButton();
+  updateAutoAdvanceAudioButton();
 }
+
 
 function buildSectionTabs() {
   const labels = ["Fraud Schemes & Financial Crimes","Fraud Investigations & Legal Issues","Fraud Prevention & Deterrence"];
@@ -451,15 +630,37 @@ function renderCard() {
   document.getElementById('prog-label').textContent = `${current+1} / ${deck.length}`;
   document.getElementById('prev-btn').disabled = current === 0;
   document.getElementById('next-btn').disabled = current === deck.length - 1;
+  if (autoRead) speakBoth();
 }
 
 function flipCard() {
-  flipped = !flipped;
+  setFlipped(!flipped);
+}
+
+function setFlipped(value) {
+  flipped = value;
   document.getElementById('card-wrap').classList.toggle('flipped', flipped);
 }
 
-function prevCard() { stopAuto(); if (current > 0) { current--; renderCard(); } }
-function nextCard() { stopAuto(); if (current < deck.length - 1) { current++; renderCard(); } else { showDoneScreen(); } }
+function prevCard() {
+  stopAuto();
+  stopSpeech();
+  if (current > 0) {
+    current--;
+    renderCard();
+  }
+}
+
+function nextCard() {
+  stopAuto();
+  stopSpeech();
+  if (current < deck.length - 1) {
+    current++;
+    renderCard();
+  } else {
+    showDoneScreen();
+  }
+}
 
 function rateCard(rating) {
   if (deck.length === 0) return;
@@ -539,6 +740,215 @@ function autoStep() {
     }
   }, 5000);
 }
+
+
+function getCurrentCard() {
+  return deck.length ? deck[current] : null;
+}
+
+function populateVoices() {
+  if (!('speechSynthesis' in window)) {
+    const sel = document.getElementById('voice-select');
+    if (sel) sel.innerHTML = '<option>Speech not supported in this browser</option>';
+    return;
+  }
+  const allVoices = window.speechSynthesis.getVoices();
+  const usVoices = allVoices.filter(v => (v.lang || '').toLowerCase() === 'en-us');
+  voices = usVoices.length ? usVoices : allVoices.filter(v => (v.lang || '').toLowerCase().startsWith('en'));
+  const preferredFemale = ['female','samantha','victoria','allison','ava','susan','zoe','jenny','aria','michelle','zira','karen','moira'];
+  voices.sort((a,b) => {
+    const af = preferredFemale.some(n => a.name.toLowerCase().includes(n));
+    const bf = preferredFemale.some(n => b.name.toLowerCase().includes(n));
+    return Number(bf) - Number(af) || a.name.localeCompare(b.name);
+  });
+  const sel = document.getElementById('voice-select');
+  const saved = localStorage.getItem('cfeFlashcardVoice');
+  sel.innerHTML = '';
+  voices.forEach((v, i) => {
+    const opt = document.createElement('option');
+    opt.value = String(i);
+    const femaleHint = preferredFemale.some(n => v.name.toLowerCase().includes(n)) ? ' — likely female' : '';
+    opt.textContent = `${v.name} (${v.lang})${femaleHint}`;
+    sel.appendChild(opt);
+  });
+  if (!voices.length) {
+    const opt = document.createElement('option');
+    opt.textContent = 'No English voices found';
+    sel.appendChild(opt);
+  } else if (saved) {
+    const idx = voices.findIndex(v => v.name === saved);
+    if (idx >= 0) sel.value = String(idx);
+  }
+}
+
+function makeUtterance(text) {
+  const u = new SpeechSynthesisUtterance(text);
+  const selected = voices[parseInt(document.getElementById('voice-select').value, 10)];
+  if (selected) u.voice = selected;
+  u.rate = parseFloat(document.getElementById('speech-rate').value);
+  u.pitch = parseFloat(document.getElementById('speech-pitch').value);
+  u.volume = parseFloat(document.getElementById('speech-volume').value);
+  return u;
+}
+
+function speakTextSequence(parts, options = {}) {
+  if (!('speechSynthesis' in window)) {
+    alert('Speech synthesis is not supported in this browser.');
+    return;
+  }
+
+  // Each new playback gets its own id. This prevents old onend/onerror
+  // callbacks from a cancelled card from advancing or replaying audio.
+  stopSpeech();
+  speechRunId++;
+  const runId = speechRunId;
+  speechMode = options.mode || null;
+  speechQueue = parts.filter(Boolean);
+  speechIndex = 0;
+  speakNextPart(runId);
+}
+
+function speakNextPart(runId) {
+  if (runId !== speechRunId) return;
+  if (speechIndex >= speechQueue.length) {
+    finishSpeechSequence(runId);
+    return;
+  }
+
+  const part = speechQueue[speechIndex];
+  if (part.side === 'front') setFlipped(false);
+  if (part.side === 'back') setFlipped(true);
+
+  const u = makeUtterance(part.text || part);
+  u.onend = () => {
+    if (runId !== speechRunId) return;
+    speechIndex++;
+    speakNextPart(runId);
+  };
+  u.onerror = () => {
+    if (runId !== speechRunId) return;
+    speechIndex++;
+    speakNextPart(runId);
+  };
+  window.speechSynthesis.speak(u);
+}
+
+function finishSpeechSequence(runId) {
+  if (runId !== speechRunId) return;
+  const mode = speechMode;
+  speechQueue = [];
+  speechIndex = 0;
+  speechMode = null;
+
+  if ((autoAdvanceAudio || autoRead) && mode === 'both') {
+    if (current < deck.length - 1) {
+      current++;
+      renderCard();
+    } else {
+      showDoneScreen();
+    }
+  }
+}
+
+function speakQuestion() {
+  const c = getCurrentCard();
+  if (!c) return;
+  speakTextSequence([{side:'front', text:'Question. ' + c.front}], {mode:'question'});
+}
+
+function speakAnswer() {
+  const c = getCurrentCard();
+  if (!c) return;
+  speakTextSequence([{side:'back', text:'Answer. ' + c.back}], {mode:'answer'});
+}
+
+function speakBoth() {
+  const c = getCurrentCard();
+  if (!c) return;
+  speakTextSequence([
+    {side:'front', text:'Question. ' + c.front},
+    {side:'back', text:'Answer. ' + c.back}
+  ], {mode:'both'});
+}
+
+function stopSpeech(clearMode = true) {
+  speechRunId++;
+  if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+  speechQueue = [];
+  speechIndex = 0;
+  if (clearMode) speechMode = null;
+}
+
+function toggleAutoRead() {
+  autoRead = !autoRead;
+  localStorage.setItem('cfeFlashcardsAutoRead', String(autoRead));
+  updateAutoReadButton();
+  if (autoRead) speakBoth(); else stopSpeech();
+}
+
+function updateAutoReadButton() {
+  const b = document.getElementById('auto-read-btn');
+  if (!b) return;
+  b.textContent = autoRead ? 'Auto-read: On' : 'Auto-read: Off';
+  b.classList.toggle('active', autoRead);
+}
+
+function toggleAutoAdvanceAudio() {
+  autoAdvanceAudio = !autoAdvanceAudio;
+  localStorage.setItem('cfeFlashcardsAutoAdvanceAudio', String(autoAdvanceAudio));
+  updateAutoAdvanceAudioButton();
+}
+
+function updateAutoAdvanceAudioButton() {
+  const b = document.getElementById('auto-advance-audio-btn');
+  if (!b) return;
+  b.textContent = autoAdvanceAudio ? 'Auto-next after audio: On' : 'Auto-next after audio: Off';
+  b.classList.toggle('active', autoAdvanceAudio);
+}
+
+function applySavedTheme() {
+  const theme = localStorage.getItem('cfeFlashcardsTheme') || 'light';
+  document.body.classList.toggle('dark-mode', theme === 'dark');
+  updateThemeButton();
+}
+
+function toggleTheme() {
+  const isDark = document.body.classList.toggle('dark-mode');
+  localStorage.setItem('cfeFlashcardsTheme', isDark ? 'dark' : 'light');
+  updateThemeButton();
+}
+
+function updateThemeButton() {
+  const b = document.getElementById('theme-btn');
+  if (!b) return;
+  const isDark = document.body.classList.contains('dark-mode');
+  b.textContent = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
+}
+
+function updateSpeechSettingLabels() {
+  document.getElementById('speech-rate-val').textContent = parseFloat(document.getElementById('speech-rate').value).toFixed(1) + '×';
+  document.getElementById('speech-pitch-val').textContent = parseFloat(document.getElementById('speech-pitch').value).toFixed(1);
+  document.getElementById('speech-volume-val').textContent = Math.round(parseFloat(document.getElementById('speech-volume').value) * 100) + '%';
+}
+
+function saveSpeechSettings() {
+  const selected = voices[parseInt(document.getElementById('voice-select').value, 10)];
+  if (selected) localStorage.setItem('cfeFlashcardVoice', selected.name);
+  localStorage.setItem('cfeFlashcardRate', document.getElementById('speech-rate').value);
+  localStorage.setItem('cfeFlashcardPitch', document.getElementById('speech-pitch').value);
+  localStorage.setItem('cfeFlashcardVolume', document.getElementById('speech-volume').value);
+}
+
+function loadSpeechSettings() {
+  const rate = localStorage.getItem('cfeFlashcardRate');
+  const pitch = localStorage.getItem('cfeFlashcardPitch');
+  const volume = localStorage.getItem('cfeFlashcardVolume');
+  if (rate) document.getElementById('speech-rate').value = rate;
+  if (pitch) document.getElementById('speech-pitch').value = pitch;
+  if (volume) document.getElementById('speech-volume').value = volume;
+  updateSpeechSettingLabels();
+}
+
 
 init();
 </script>
