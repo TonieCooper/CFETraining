@@ -162,6 +162,12 @@ body.dark-mode .app-nav a.active-page {
   .resume-status { text-align: left; }
 }
 
+
+.audio-action-row { align-items:center; }
+.primary-audio { background:#1a5fb4; border-color:#1a5fb4; color:#fff; font-weight:700; }
+.primary-audio:hover { background:#1447a0; border-color:#1447a0; color:#fff; }
+.inline-note { margin-left:4px; }
+body.dark-mode .primary-audio { background:#2563eb; border-color:#93c5fd; color:#fff; }
 </style>
 </head>
 <body>
@@ -206,13 +212,10 @@ body.dark-mode .app-nav a.active-page {
     <button class="ctrl-btn" id="auto-btn" onclick="toggleAuto()">▶ Auto-flip (5s)</button>
   </div>
   <div class="speech-panel" aria-label="Flashcard audio controls">
-    <div class="speech-row">
-      <button class="ctrl-btn" onclick="speakQuestion()">🔊 Read Question</button>
-      <button class="ctrl-btn" onclick="speakAnswer()">🔊 Read Answer</button>
-      <button class="ctrl-btn" onclick="speakBoth()">🔊 Read Both</button>
-      <button class="ctrl-btn" onclick="stopSpeech()">⏹ Stop Audio</button>
-      <button class="ctrl-btn" id="auto-read-btn" onclick="toggleAutoRead()">Auto-read: Off</button>
-      <button class="ctrl-btn" id="auto-advance-audio-btn" onclick="toggleAutoAdvanceAudio()">Auto-next after audio: Off</button>
+    <div class="speech-row audio-action-row">
+      <button class="ctrl-btn primary-audio" id="play-audio-btn" onclick="playAudioDeck()">▶ Play</button>
+      <button class="ctrl-btn" id="stop-audio-btn" onclick="stopAudioDeck()">⏹ Stop</button>
+      <span class="speech-note inline-note">Play reads the question, flips to the answer, then advances to the next card automatically.</span>
     </div>
     <div class="speech-row">
       <label for="voice-quality-select">Voice quality</label>
@@ -628,8 +631,9 @@ let autoOn = false;
 let autoPhase = 'front';
 let voices = [];
 let voiceQualityFilter = localStorage.getItem('cfeFlashcardVoiceQuality') || 'best';
-let autoRead = localStorage.getItem('cfeFlashcardsAutoRead') === 'true';
-let autoAdvanceAudio = localStorage.getItem('cfeFlashcardsAutoAdvanceAudio') === 'true';
+let audioDeckPlaying = false;
+let autoRead = false;
+let autoAdvanceAudio = true;
 let speechQueue = [];
 let speechIndex = 0;
 let speechMode = null;
@@ -645,8 +649,6 @@ function init() {
   }
   loadSection(0);
   updateResumeStatus();
-  updateAutoReadButton();
-  updateAutoAdvanceAudioButton();
 }
 
 
@@ -658,7 +660,7 @@ function buildSectionTabs() {
     const b = document.createElement('button');
     b.className = 'sec-tab' + (i === currentSection ? ' active' : '');
     b.textContent = lbl;
-    b.onclick = () => { stopAuto(); currentSection = i; loadSection(i); buildSectionTabs(); };
+    b.onclick = () => { stopAuto(); stopAudioDeck(); currentSection = i; loadSection(i); buildSectionTabs(); };
     row.appendChild(b);
   });
 }
@@ -724,7 +726,7 @@ function renderCard() {
   document.getElementById('prev-btn').disabled = current === 0;
   document.getElementById('next-btn').disabled = current === deck.length - 1;
   saveStudyProgress();
-  if (autoRead) speakBoth();
+  if (audioDeckPlaying) speakBoth();
 }
 
 function flipCard() {
@@ -738,20 +740,25 @@ function setFlipped(value) {
 
 function prevCard() {
   stopAuto();
+  const keepPlaying = audioDeckPlaying;
   stopSpeech();
   if (current > 0) {
     current--;
+    audioDeckPlaying = keepPlaying;
     renderCard();
   }
 }
 
 function nextCard() {
   stopAuto();
+  const keepPlaying = audioDeckPlaying;
   stopSpeech();
   if (current < deck.length - 1) {
     current++;
+    audioDeckPlaying = keepPlaying;
     renderCard();
   } else {
+    audioDeckPlaying = false;
     showDoneScreen();
   }
 }
@@ -983,13 +990,13 @@ function finishSpeechSequence(runId) {
   speechIndex = 0;
   speechMode = null;
 
-  // Only advance when the separate Auto-next setting is ON.
-  // Auto-read by itself should read the current card and stop on the answer.
-  if (autoAdvanceAudio && mode === 'both') {
+  if (audioDeckPlaying && mode === 'both') {
     if (current < deck.length - 1) {
       current++;
       renderCard();
     } else {
+      audioDeckPlaying = false;
+      updatePlayButton();
       showDoneScreen();
     }
   }
@@ -1028,7 +1035,7 @@ function toggleAutoRead() {
   autoRead = !autoRead;
   localStorage.setItem('cfeFlashcardsAutoRead', String(autoRead));
   updateAutoReadButton();
-  if (autoRead) speakBoth(); else stopSpeech();
+  if (audioDeckPlaying) speakBoth(); else stopSpeech();
 }
 
 function updateAutoReadButton() {
@@ -1049,6 +1056,27 @@ function updateAutoAdvanceAudioButton() {
   if (!b) return;
   b.textContent = autoAdvanceAudio ? 'Auto-next after audio: On' : 'Auto-next after audio: Off';
   b.classList.toggle('active', autoAdvanceAudio);
+}
+
+function playAudioDeck() {
+  if (!deck.length) return;
+  stopAuto();
+  audioDeckPlaying = true;
+  updatePlayButton();
+  speakBoth();
+}
+
+function stopAudioDeck() {
+  audioDeckPlaying = false;
+  stopSpeech();
+  updatePlayButton();
+}
+
+function updatePlayButton() {
+  const b = document.getElementById('play-audio-btn');
+  if (!b) return;
+  b.textContent = audioDeckPlaying ? '⏸ Playing' : '▶ Play';
+  b.classList.toggle('active', audioDeckPlaying);
 }
 
 function applySavedTheme() {
