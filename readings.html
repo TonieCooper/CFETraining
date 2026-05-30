@@ -639,7 +639,12 @@ function loadTopic(sec, topic) {
   const raw = CONTENT[sec][topic];
   paras = raw.filter(x => x.type === 'p' || x.type === 'callout');
   renderContent(raw);
+  updateHighlight();
   updateProgress();
+
+  // Always start a newly selected topic at the top of the reading pane.
+  const contentArea = document.getElementById('content-area');
+  if (contentArea) contentArea.scrollTop = 0;
 }
 
 function renderContent(items) {
