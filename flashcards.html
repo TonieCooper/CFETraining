@@ -85,6 +85,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .speech-row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
 .speech-row label { font-size:12px; color:#666; font-weight:600; }
 .speech-row select { min-width:220px; flex:1; border:2px solid var(--border); border-radius:8px; padding:7px 10px; font-family:inherit; background:var(--panel); color:var(--text); }
+.speech-row select.compact-select { min-width:150px; flex:0 1 190px; }
+.speech-note { font-size:12px; color:var(--muted); line-height:1.45; }
 .speech-row input[type=range] { width:120px; }
 .ctrl-btn.speaking { border-color:#1a5fb4; background:#1a5fb4; color:#fff; }
 
@@ -135,6 +137,14 @@ body.dark-mode .rate-btn.easy { background:#102a4c; }
       <button class="ctrl-btn" id="auto-advance-audio-btn" onclick="toggleAutoAdvanceAudio()">Auto-next after audio: Off</button>
     </div>
     <div class="speech-row">
+      <label for="voice-quality-select">Voice quality</label>
+      <select id="voice-quality-select" class="compact-select" onchange="saveSpeechSettings(); populateVoices();">
+        <option value="best">Best soothing voices</option>
+        <option value="natural">Premium/Natural only</option>
+        <option value="female">Female-sounding only</option>
+        <option value="us">All US English</option>
+        <option value="english">All English</option>
+      </select>
       <label for="voice-select">Voice</label>
       <select id="voice-select" onchange="saveSpeechSettings()"></select>
       <label for="speech-rate">Rate <span id="speech-rate-val">1.0×</span></label>
@@ -144,6 +154,7 @@ body.dark-mode .rate-btn.easy { background:#102a4c; }
       <label for="speech-volume">Volume <span id="speech-volume-val">100%</span></label>
       <input type="range" id="speech-volume" min="0" max="1" step="0.1" value="1" oninput="updateSpeechSettingLabels(); saveSpeechSettings();">
     </div>
+    <div class="speech-note" id="voice-help">Tip: for the calmest sound, choose a Natural, Premium, Enhanced, Ava, Jenny, Aria, Samantha, Allison, or Zoe voice if your browser provides one.</div>
   </div>
   <div class="prog-row">
     <div class="prog-bar"><div class="prog-fill" id="prog-fill"></div></div>
@@ -538,6 +549,7 @@ let autoTimer = null;
 let autoOn = false;
 let autoPhase = 'front';
 let voices = [];
+let voiceQualityFilter = localStorage.getItem('cfeFlashcardVoiceQuality') || 'best';
 let autoRead = localStorage.getItem('cfeFlashcardsAutoRead') === 'true';
 let autoAdvanceAudio = localStorage.getItem('cfeFlashcardsAutoAdvanceAudio') === 'true';
 let speechQueue = [];
@@ -746,29 +758,70 @@ function getCurrentCard() {
   return deck.length ? deck[current] : null;
 }
 
+function voiceInfo(v) {
+  const name = (v.name || '').toLowerCase();
+  const lang = (v.lang || '').toLowerCase();
+  const femaleNames = ['female','samantha','victoria','allison','ava','susan','zoe','jenny','aria','michelle','zira','karen','moira','serena','tessa','sara','sarah','emma','olivia','joanna','kendra','kimberly','salli','ivy'];
+  const naturalWords = ['natural','premium','enhanced','neural','online','wavenet'];
+  const calmNames = ['ava','jenny','aria','samantha','allison','zoe','susan','victoria','serena','tessa','sarah','sara','emma','olivia','joanna','kendra'];
+  return {
+    isUS: lang === 'en-us',
+    isEnglish: lang.startsWith('en'),
+    isFemale: femaleNames.some(n => name.includes(n)),
+    isNatural: naturalWords.some(n => name.includes(n)),
+    isCalm: calmNames.some(n => name.includes(n)),
+    score: 0
+  };
+}
+
+function voiceScore(v) {
+  const info = voiceInfo(v);
+  let score = 0;
+  if (info.isNatural) score += 40;
+  if (info.isCalm) score += 30;
+  if (info.isFemale) score += 20;
+  if (info.isUS) score += 10;
+  if ((v.localService === false)) score += 4;
+  return score;
+}
+
 function populateVoices() {
+  const qualitySel = document.getElementById('voice-quality-select');
+  if (qualitySel) {
+    voiceQualityFilter = localStorage.getItem('cfeFlashcardVoiceQuality') || voiceQualityFilter || 'best';
+    qualitySel.value = voiceQualityFilter;
+  }
   if (!('speechSynthesis' in window)) {
     const sel = document.getElementById('voice-select');
     if (sel) sel.innerHTML = '<option>Speech not supported in this browser</option>';
     return;
   }
-  const allVoices = window.speechSynthesis.getVoices();
-  const usVoices = allVoices.filter(v => (v.lang || '').toLowerCase() === 'en-us');
-  voices = usVoices.length ? usVoices : allVoices.filter(v => (v.lang || '').toLowerCase().startsWith('en'));
-  const preferredFemale = ['female','samantha','victoria','allison','ava','susan','zoe','jenny','aria','michelle','zira','karen','moira'];
-  voices.sort((a,b) => {
-    const af = preferredFemale.some(n => a.name.toLowerCase().includes(n));
-    const bf = preferredFemale.some(n => b.name.toLowerCase().includes(n));
-    return Number(bf) - Number(af) || a.name.localeCompare(b.name);
-  });
+  const allVoices = window.speechSynthesis.getVoices().filter(v => voiceInfo(v).isEnglish);
+  let filtered = allVoices.slice();
+  if (voiceQualityFilter === 'natural') filtered = allVoices.filter(v => voiceInfo(v).isNatural);
+  else if (voiceQualityFilter === 'female') filtered = allVoices.filter(v => voiceInfo(v).isFemale);
+  else if (voiceQualityFilter === 'us') filtered = allVoices.filter(v => voiceInfo(v).isUS);
+  else if (voiceQualityFilter === 'best') {
+    filtered = allVoices.filter(v => {
+      const i = voiceInfo(v);
+      return i.isUS && (i.isNatural || i.isCalm || i.isFemale);
+    });
+  }
+  if (!filtered.length && voiceQualityFilter !== 'english') filtered = allVoices.slice();
+  voices = filtered.sort((a,b) => voiceScore(b) - voiceScore(a) || a.name.localeCompare(b.name));
+
   const sel = document.getElementById('voice-select');
   const saved = localStorage.getItem('cfeFlashcardVoice');
   sel.innerHTML = '';
   voices.forEach((v, i) => {
     const opt = document.createElement('option');
     opt.value = String(i);
-    const femaleHint = preferredFemale.some(n => v.name.toLowerCase().includes(n)) ? ' — likely female' : '';
-    opt.textContent = `${v.name} (${v.lang})${femaleHint}`;
+    const info = voiceInfo(v);
+    const tags = [];
+    if (info.isNatural) tags.push('Natural/Premium');
+    if (info.isFemale) tags.push('likely female');
+    if (info.isCalm) tags.push('calm pick');
+    opt.textContent = `${v.name} (${v.lang})${tags.length ? ' — ' + tags.join(', ') : ''}`;
     sel.appendChild(opt);
   });
   if (!voices.length) {
@@ -778,6 +831,13 @@ function populateVoices() {
   } else if (saved) {
     const idx = voices.findIndex(v => v.name === saved);
     if (idx >= 0) sel.value = String(idx);
+  }
+
+  const help = document.getElementById('voice-help');
+  if (help) {
+    help.textContent = voices.length
+      ? `Showing ${voices.length} browser voice${voices.length === 1 ? '' : 's'}. For the calmest sound, try voices tagged Natural/Premium or calm pick.`
+      : 'No matching browser voices found. Try changing the voice quality filter.';
   }
 }
 
@@ -840,7 +900,9 @@ function finishSpeechSequence(runId) {
   speechIndex = 0;
   speechMode = null;
 
-  if ((autoAdvanceAudio || autoRead) && mode === 'both') {
+  // Only advance when the separate Auto-next setting is ON.
+  // Auto-read by itself should read the current card and stop on the answer.
+  if (autoAdvanceAudio && mode === 'both') {
     if (current < deck.length - 1) {
       current++;
       renderCard();
@@ -934,6 +996,11 @@ function updateSpeechSettingLabels() {
 function saveSpeechSettings() {
   const selected = voices[parseInt(document.getElementById('voice-select').value, 10)];
   if (selected) localStorage.setItem('cfeFlashcardVoice', selected.name);
+  const quality = document.getElementById('voice-quality-select');
+  if (quality) {
+    voiceQualityFilter = quality.value;
+    localStorage.setItem('cfeFlashcardVoiceQuality', voiceQualityFilter);
+  }
   localStorage.setItem('cfeFlashcardRate', document.getElementById('speech-rate').value);
   localStorage.setItem('cfeFlashcardPitch', document.getElementById('speech-pitch').value);
   localStorage.setItem('cfeFlashcardVolume', document.getElementById('speech-volume').value);
@@ -943,6 +1010,11 @@ function loadSpeechSettings() {
   const rate = localStorage.getItem('cfeFlashcardRate');
   const pitch = localStorage.getItem('cfeFlashcardPitch');
   const volume = localStorage.getItem('cfeFlashcardVolume');
+  const quality = localStorage.getItem('cfeFlashcardVoiceQuality');
+  if (quality && document.getElementById('voice-quality-select')) {
+    voiceQualityFilter = quality;
+    document.getElementById('voice-quality-select').value = quality;
+  }
   if (rate) document.getElementById('speech-rate').value = rate;
   if (pitch) document.getElementById('speech-pitch').value = pitch;
   if (volume) document.getElementById('speech-volume').value = volume;
