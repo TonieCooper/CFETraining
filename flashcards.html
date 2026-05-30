@@ -638,8 +638,10 @@ let speechQueue = [];
 let speechIndex = 0;
 let speechMode = null;
 let speechRunId = 0;
+let suppressProgressSave = false;
 
 function init() {
+  suppressProgressSave = true;
   applySavedTheme();
   buildSectionTabs();
   loadSpeechSettings();
@@ -648,6 +650,7 @@ function init() {
     window.speechSynthesis.onvoiceschanged = populateVoices;
   }
   loadSection(0);
+  suppressProgressSave = false;
   updateResumeStatus();
 }
 
@@ -725,7 +728,7 @@ function renderCard() {
   document.getElementById('prog-label').textContent = `${current+1} / ${deck.length}`;
   document.getElementById('prev-btn').disabled = current === 0;
   document.getElementById('next-btn').disabled = current === deck.length - 1;
-  saveStudyProgress();
+  if (!suppressProgressSave) saveStudyProgress();
   if (audioDeckPlaying) speakBoth();
 }
 
